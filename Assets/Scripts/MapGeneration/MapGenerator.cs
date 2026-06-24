@@ -11,7 +11,7 @@ public class MapGenerator : MonoBehaviour
     
     public int playerCount = 2;
     public int neutralBasesCount = 3;
-    public int minDistanceBetweenObjects = 60;
+    public int minDistanceBetweenObjects = 5;
 
     private List<Vector2Int> criticalNodes = new List<Vector2Int>();
     private List<Vector2Int> spacedObjects = new List<Vector2Int>();
