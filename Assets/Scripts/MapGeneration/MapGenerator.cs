@@ -10,10 +10,11 @@ public class MapGenerator : MonoBehaviour
     private TileData[,] mapGrid;
     
     public int playerCount = 2;
-    public int neutralBasesCount = 5;
-    public int minDistanceBetweenObjects = 10;
+    public int neutralBasesCount = 3;
+    public int minDistanceBetweenObjects = 60;
 
     private List<Vector2Int> criticalNodes = new List<Vector2Int>();
+    private List<Vector2Int> spacedObjects = new List<Vector2Int>();
 
     void Start()
     {
@@ -24,6 +25,7 @@ public class MapGenerator : MonoBehaviour
     {
         mapGrid = new TileData[mapWidth, mapHeight];
         criticalNodes.Clear();
+        spacedObjects.Clear();
 
         // 1. initialize clean grid
         for (int x = 0; x < mapWidth; x++) {
@@ -38,19 +40,32 @@ public class MapGenerator : MonoBehaviour
         for (int i = 0; i < playerCount; i++) {
             
             Vector2Int pos = FindValidPosition();
+            
+            if (pos == new Vector2Int(-1, -1))
+            {
+                Debug.LogError("Failed to place castle.");
+                continue;
+            }
+            
             mapGrid[pos.x, pos.y].CurrentType = TileType.Castle;
-            mapGrid[pos.x, pos.y].OwnerPlayerId = i; 
+            mapGrid[pos.x, pos.y].OwnerPlayerId = i;
             criticalNodes.Add(pos);
             
         }
 
         // 3. scatter outposts (if turns yellow well... nothing we can do) 
-        for (int i = 0; i < neutralBasesCount; i++) {
-            
+        for (int i = 0; i < neutralBasesCount; i++)
+        {
             Vector2Int pos = FindValidPosition();
+
+            if (pos == new Vector2Int(-1, -1))
+            {
+                Debug.LogError("Failed to place outpost.");
+                continue;
+            }
+
             mapGrid[pos.x, pos.y].CurrentType = TileType.Outpost;
             criticalNodes.Add(pos);
-            
         }
 
         // 4. generate roads but SKIPP CASTLES
@@ -65,26 +80,25 @@ public class MapGenerator : MonoBehaviour
     private Vector2Int FindValidPosition()
     {
         int attempts = 0;
-        
-        while (attempts < 500) {
-            
-            int x = Random.Range(5, mapWidth - 5);
-            int y = Random.Range(5, mapHeight - 5);
-            
-            Vector2Int potentialPos = new Vector2Int(x, y);
 
-            bool farEnough = true;
-            
-            foreach (var node in criticalNodes) {
-                if (Vector2Int.Distance(potentialPos, node) < minDistanceBetweenObjects) {
-                    farEnough = false;
-                    break;
-                }
+        while (attempts < 500)
+        {
+            int x = Random.Range(0, mapWidth);
+            int y = Random.Range(0, mapHeight);
+
+            Vector2Int pos = new Vector2Int(x, y);
+
+            if (mapGrid[x, y].CurrentType == TileType.Empty &&
+                IsFarEnough(pos))
+            {
+                spacedObjects.Add(pos);
+                return pos;
             }
-            if (farEnough) return potentialPos;
+
             attempts++;
         }
-        return new Vector2Int(Random.Range(0, mapWidth), Random.Range(0, mapHeight));
+
+        return new Vector2Int(-1, -1);
     }
 
     private void GenerateRoadNetwork()
@@ -132,8 +146,15 @@ public class MapGenerator : MonoBehaviour
                 
                 if (mapGrid[x, y].CurrentType == TileType.Empty) {
                     
-                    if (Random.value < mineSpawnChance) {
-                        mapGrid[x, y].CurrentType = TileType.Mine;
+                    if (Random.value < mineSpawnChance)
+                    {
+                        Vector2Int pos = new Vector2Int(x, y);
+
+                        if (IsFarEnough(pos))
+                        {
+                            mapGrid[x, y].CurrentType = TileType.Mine;
+                            spacedObjects.Add(pos);
+                        }
                     }
                 }
             }
@@ -230,6 +251,19 @@ public class MapGenerator : MonoBehaviour
             attempts++;
         }
         return new Vector2Int(-1, -1);
+    }
+    
+    private bool IsFarEnough(Vector2Int pos)
+    {
+        float minDistSq = minDistanceBetweenObjects * minDistanceBetweenObjects;
+
+        foreach (var other in spacedObjects)
+        {
+            if ((pos - other).sqrMagnitude < minDistSq)
+                return false;
+        }
+
+        return true;
     }
 
     private List<Vector2Int> GetNeighbors(Vector2Int pos)
