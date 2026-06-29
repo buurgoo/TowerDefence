@@ -277,4 +277,76 @@ public class MapGenerator : MonoBehaviour
 
         return neighbors;
     }
+
+    public List<Vector2Int> FindPath(Vector2Int startPos, Vector2Int targetPos)
+    {
+        var emptyPath = new List<Vector2Int>();
+        var queue = new Queue<Vector2Int>();
+        var visited = new HashSet<Vector2Int>();
+        var cameFrom = new Dictionary<Vector2Int, Vector2Int>();
+
+        if (mapGrid == null) return emptyPath;
+
+        queue.Enqueue(startPos);
+        visited.Add(startPos);
+
+        while (queue.Count > 0)
+        {
+            Vector2Int current = queue.Dequeue();
+            if (current == targetPos) break;
+
+            foreach (Vector2Int neighbor in GetNeighbors(current))
+            {
+                if (visited.Contains(neighbor)) continue;
+                if (!IsWalkable(neighbor)) continue;
+
+                visited.Add(neighbor);
+                cameFrom[neighbor] = current;
+                queue.Enqueue(neighbor);
+            }
+        }
+
+        if (startPos != targetPos && !cameFrom.ContainsKey(targetPos)) return emptyPath;
+        var path = new List<Vector2Int>();
+        Vector2Int pathCell = targetPos;
+        while (pathCell != startPos)
+        {
+            path.Add(pathCell);
+            pathCell = cameFrom[pathCell];
+        }
+
+        return path.Reverse();
+    }
+
+    public Vector2Int GetCastlePosition(int playerId) 
+    {
+        for (int x = 0; x < mapWidth; x++)
+        {
+            for (int y = 0; y < mapHeight; y++)
+            {
+                TileData tile = mapGrid[x, y];
+                if (tile.CurrentType == TileType.Castle && tile.OwnerPlayerId == playerId) 
+                    return new Vector2Int(x, y); 
+            }
+        }
+
+        return new Vector2Int(-1, -1);
+    }
+
+    private bool IsWalkable(Vector2Int pos)
+    {
+        TileType tileType = mapGrid[pos.x, pos.y].CurrentType;
+        return tileType != TileType.Forest && tileType != TileType.Mine;
+    }
+
+    public Vector3 GridToWorld(Vector2Int cell, float height = 0.35f)
+    { // same as in InstantiateDebugGrid
+        float offsetX = (mapWidth * tileSize) / 2f;
+        float offsetZ = (mapHeight * tileSize) / 2f;
+        float worldX = (x * tileSize) - offsetX + (tileSize / 2f);
+        float worldZ = (y * tileSize) - offsetZ + (tileSize / 2f);
+        return new Vector3(worldX, height, worldZ);
+
+    }
+
 }
