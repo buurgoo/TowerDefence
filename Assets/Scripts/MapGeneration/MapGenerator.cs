@@ -315,7 +315,8 @@ public class MapGenerator : MonoBehaviour
             pathCell = cameFrom[pathCell];
         }
 
-        return path.Reverse();
+        path.Reverse();
+        return path;
     }
 
     public Vector2Int GetCastlePosition(int playerId) 
@@ -343,10 +344,9 @@ public class MapGenerator : MonoBehaviour
     { // same as in InstantiateDebugGrid
         float offsetX = (mapWidth * tileSize) / 2f;
         float offsetZ = (mapHeight * tileSize) / 2f;
-        float worldX = (x * tileSize) - offsetX + (tileSize / 2f);
-        float worldZ = (y * tileSize) - offsetZ + (tileSize / 2f);
+        float worldX = (cell.x * tileSize) - offsetX + (tileSize / 2f);
+        float worldZ = (cell.y * tileSize) - offsetZ + (tileSize / 2f);
         return new Vector3(worldX, height, worldZ);
 
     }
-
 }
