@@ -23,6 +23,7 @@ public class EnemyMove : MonoBehaviour {
         if (startCell.x < 0 || targetCell.x < 0) yield break;
         
         List<Vector2Int> path = mapGenerator.FindPath(startCell, targetCell);
+        Debug.Log("Enemy: path length = " + path.Count);
         if (path.Count == 0 && startCell != targetCell) yield break;
 
         transform.position = mapGenerator.GridToWorld(startCell, heightAboveGround); 
@@ -34,11 +35,13 @@ public class EnemyMove : MonoBehaviour {
             while (Vector3.Distance(transform.position, targetPosition) > 0.01f)
             {
                     transform.position = Vector3.MoveTowards(
-                        transform.position, targetPosition, moveSpeed * Time.deltaTime);
+                        transform.position, 
+                        targetPosition, 
+                        moveSpeed * Time.deltaTime
+                    );
                     yield return null;
-                
-                transform.position = targetPosition;
             }        
+            transform.position = targetPosition;
         }
     }
 }
