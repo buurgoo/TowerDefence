@@ -81,6 +81,8 @@ mono_crash.*
 *.unitypackage.meta
 *.app
 
+*.DS_Store
+
 # Crashlytics generated file
 crashlytics-build.properties
 
