@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class MapGenerator : MonoBehaviour
 {
+    public int generationSeed = 42;
+
     public int mapWidth = 20;
     public int mapHeight = 20;
     public float tileSize = 1f;
@@ -16,13 +18,15 @@ public class MapGenerator : MonoBehaviour
     private List<Vector2Int> criticalNodes = new List<Vector2Int>();
     private List<Vector2Int> spacedObjects = new List<Vector2Int>();
 
-    void Start()
-    {
-        GenerateMap();
-    }
+    //void Start()
+    //{
+    //    GenerateMap();
+    //}
 
     public void GenerateMap()
     {
+        Random.InitState(generationSeed);
+
         mapGrid = new TileData[mapWidth, mapHeight];
         criticalNodes.Clear();
         spacedObjects.Clear();

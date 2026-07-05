@@ -188,7 +188,7 @@ MonoBehaviour:
     Prefabs:
       NetworkPrefabsLists:
       - {fileID: 11400000, guid: a463df38b4d8ffb4397989f7a41257fb, type: 2}
-    TickRate: 30
+    TickRate: 20
     ClientConnectionBufferTimeout: 10
     ConnectionApproval: 0
     ConnectionData: 
@@ -1188,6 +1188,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   hostButton: {fileID: 445304141}
   clientButton: {fileID: 7876213658179611238}
+  mapGenerator: {fileID: 7933355413383087477}
 --- !u!1 &2068270054
 GameObject:
   m_ObjectHideFlags: 0
@@ -1367,8 +1368,28 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 400930207678124343, guid: 56b5bf2891f8f574d8f53f1a854aa7b3, type: 3}
+      propertyPath: Ownership
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 400930207678124343, guid: 56b5bf2891f8f574d8f53f1a854aa7b3, type: 3}
       propertyPath: GlobalObjectIdHash
       value: 3909361065
+      objectReference: {fileID: 0}
+    - target: {fileID: 400930207678124343, guid: 56b5bf2891f8f574d8f53f1a854aa7b3, type: 3}
+      propertyPath: DontDestroyWithOwner
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400930207678124343, guid: 56b5bf2891f8f574d8f53f1a854aa7b3, type: 3}
+      propertyPath: SynchronizeTransform
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 400930207678124343, guid: 56b5bf2891f8f574d8f53f1a854aa7b3, type: 3}
+      propertyPath: SceneMigrationSynchronization
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400930207678124343, guid: 56b5bf2891f8f574d8f53f1a854aa7b3, type: 3}
+      propertyPath: SyncOwnerTransformWhenParented
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 400930207678124343, guid: 56b5bf2891f8f574d8f53f1a854aa7b3, type: 3}
       propertyPath: InScenePlacedSourceGlobalObjectIdHash
@@ -1648,6 +1669,17 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
+--- !u!114 &7933355413383087477 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6808437175058216901, guid: 56b5bf2891f8f574d8f53f1a854aa7b3, type: 3}
+  m_PrefabInstance: {fileID: 3487084903344353968}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b46ab043446148fa825845f3e4bfa90b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MapGenerator
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
