@@ -282,7 +282,7 @@ public class MapGenerator : MonoBehaviour
         return neighbors;
     }
 
-    public List<Vector2Int> FindPath(Vector2Int startPos, Vector2Int targetPos)
+    public List<Vector2Int> FindPath(Vector2Int startPos, Vector2Int targetPos, bool onlyRoad = false)
     {
         var emptyPath = new List<Vector2Int>();
         var queue = new Queue<Vector2Int>();
@@ -302,7 +302,7 @@ public class MapGenerator : MonoBehaviour
             foreach (Vector2Int neighbor in GetNeighbors(current))
             {
                 if (visited.Contains(neighbor)) continue;
-                if (!IsWalkable(neighbor)) continue;
+                if (!IsWalkable(neighbor, onlyRoad)) continue;
 
                 visited.Add(neighbor);
                 cameFrom[neighbor] = current;
@@ -338,9 +338,10 @@ public class MapGenerator : MonoBehaviour
         return new Vector2Int(-1, -1);
     }
 
-    private bool IsWalkable(Vector2Int pos)
+    private bool IsWalkable(Vector2Int pos, bool onlyRoad)
     {
         TileType tileType = mapGrid[pos.x, pos.y].CurrentType;
+        if (onlyRoad) return tileType == TileType.Road || tileType == TileType.Castle;
         return tileType != TileType.Forest && tileType != TileType.Mine;
     }
 
@@ -352,5 +353,31 @@ public class MapGenerator : MonoBehaviour
         float worldZ = (cell.y * tileSize) - offsetZ + (tileSize / 2f);
         return new Vector3(worldX, height, worldZ);
 
+    }
+
+    public List<Vector2Int> GetTowerPosBtwPlayers(int playerId, int targetPlayerId)
+    {
+        var availablePositions = new List<Vector2Int>();
+        var addedPositions = new HashSet<Vector2Int>();
+
+        if (mapGrid == null) return availablePositions;
+
+        Vector2Int aiCastlePosition = GetCastlePosition(playerId);
+        Vector2Int enemyCastlePosition = GetCastlePosition(targetPlayerId);
+
+        if (aiCastlePosition == new Vector2Int(-1, -1) || enemyCastlePosition == new Vector2Int(-1, -1))
+            return availablePositions;
+
+        List<Vector2Int> roadPath = FindPath(aiCastlePosition, enemyCastlePosition, onlyRoad: true);
+
+    foreach (Vector2Int roadCell in roadPath)
+    {
+        foreach (Vector2Int neighbor in GetNeighbors(roadCell))
+        {
+            if (mapGrid[neighbor.x, neighbor.y].CurrentType != TileType.Empty) continue;
+            if (addedPositions.Add(neighbor)) availablePositions.Add(neighbor);
+        }
+    }
+    return availablePositions;
     }
 }
