@@ -27,6 +27,13 @@ public class MapGenerator : NetworkBehaviour
         {
             mapSeed.Value = Random.Range(1, 999999); 
         }
+        else
+        {
+            if (mapSeed.Value != 0)
+            {
+                GenerateMap(mapSeed.Value);
+            }
+        }
     }
 
     public override void OnNetworkDespawn()
