@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-//using Unity.Netcode;
 
 public class SpawnUI : MonoBehaviour
 {
@@ -20,7 +19,7 @@ public class SpawnUI : MonoBehaviour
     {
         Debug.Log($"Spawn button clicked.");
         var instanceCastle = castle.GetComponent<Castle>();
-        Debug.Log($"castle id = {instanceCastle.getPlayerId()}");
+        Debug.Log($"Castle id = {instanceCastle.getPlayerId()}");
         if (instanceCastle.getPlayerId() == player)
         {
             instanceCastle.SpawnRpc("goblin");

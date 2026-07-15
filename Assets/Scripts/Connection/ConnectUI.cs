@@ -8,8 +8,6 @@ public class ConnectUI : NetworkBehaviour
     public Button hostButton;
     [SerializeField] 
     public Button clientButton;
-    //[SerializeField]
-    //public Button mapGeneratorButton;
     [SerializeField]
     public MapGenerator mapGenerator;
 
@@ -20,7 +18,6 @@ public class ConnectUI : NetworkBehaviour
     {
         hostButton.onClick.AddListener(HostButtonOnClick);
         clientButton.onClick.AddListener(ClientButtonOnClick);
-        //mapGeneratorButton.onClick.AddListener(MapGeneratorButtonOnClick);
     }
 
     public override void OnNetworkSpawn()
@@ -72,11 +69,6 @@ public class ConnectUI : NetworkBehaviour
         }
         
     }
-
-    //public void MapGeneratorButtonOnClick()
-    //{
-    //    mapGenerator.GenerateMap();
-    //}
 
     public void DisconnectClient()
     {

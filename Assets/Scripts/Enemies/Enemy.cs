@@ -6,10 +6,6 @@ public class Enemy : MonoBehaviour {
     [SerializeField] 
     private MapGenerator mapGenerator;
 
-    //[Header("Position")]
-    //private Vector3 startCoordinates;
-    //private Vector3 currentCoordinates;
-
     [Header("Health")]
     private int maxHp = 0;
     private int currentHp = 0;
