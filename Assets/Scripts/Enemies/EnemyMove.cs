@@ -2,17 +2,31 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class EnemyMove : MonoBehaviour {
-    [SerializeField] private MapGenerator mapGenerator;
+public class Enemy : MonoBehaviour {
+    [SerializeField] 
+    private MapGenerator mapGenerator;
 
-    [Header("Path")]
-    [SerializeField] private int targetPlayerId = 1;
+    //[Header("Position")]
+    //private Vector3 startCoordinates;
+    //private Vector3 currentCoordinates;
+
+    [Header("Health")]
+    private int maxHp = 0;
+    private int currentHp = 0;
+
+    [Header("Target")]
+    [SerializeField] 
+    private int targetPlayerId = -1;
 
     [Header("Movement")]
-    [SerializeField] private float moveSpeed = 2f;
-    [SerializeField] private float heightAboveGround = 0.35f;
+    [SerializeField] 
+    private float moveSpeed = 2f;
+    [SerializeField] 
+    private float heightAboveGround = 0.35f;
 
-    private IEnumerator Start() {
+    public void setTarget(int target) { targetPlayerId = target; }
+
+    private IEnumerator Move() {
         yield return null;
 
         if (mapGenerator == null) yield break;

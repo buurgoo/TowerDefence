@@ -4,11 +4,13 @@ using Unity.Netcode;
 
 public class MapGenerator : NetworkBehaviour
 {
+    [Header("Generation Parameters")]
     [SerializeField]
     public GameObject castle;
 
     public int generationSeed = 42;
 
+    [Header("Map Parameters")]
     public int mapWidth = 20;
     public int mapHeight = 20;
     public float tileSize = 1f;
@@ -58,11 +60,15 @@ public class MapGenerator : NetworkBehaviour
             mapGrid[pos.x, pos.y].CurrentType = TileType.Castle;
             mapGrid[pos.x, pos.y].OwnerPlayerId = i;
             criticalNodes.Add(pos);
-            var instance = Instantiate(castle, local_to_global_coords(pos.x, pos.y), new Quaternion(0, 0, 0, 0));
-            var instanceCastle = instance.GetComponent<Castle>();
-            instanceCastle.player_id = i;
-            var instanceNetworkObject = instance.GetComponent<NetworkObject>();
-            instanceNetworkObject.Spawn();
+            if (IsHost)
+            {
+                Vector3 coords = GridToWorld(pos);
+                var instance = Instantiate(castle, coords, new Quaternion(0, 0, 0, 0));
+                var instanceCastle = instance.GetComponent<Castle>();
+                instanceCastle.setPlayerId(i);
+                instanceCastle.setMaxHP(20);
+                instance.GetComponent<NetworkObject>().Spawn();
+            }
         }
 
         // 3. scatter outposts (if turns yellow well... nothing we can do) 
@@ -230,17 +236,6 @@ public class MapGenerator : NetworkBehaviour
                 ren.material.color = GetColorForType(mapGrid[x, y].CurrentType, mapGrid[x, y].OwnerPlayerId);
             }
         }
-    }
-
-    private Vector3 local_to_global_coords(float x, float y)
-    {
-        float offsetX = (mapWidth * tileSize) / 2f;
-        float offsetZ = (mapHeight * tileSize) / 2f;
-
-        float worldX = (x * tileSize) - offsetX + (tileSize / 2f);
-        float worldZ = (y * tileSize) - offsetZ + (tileSize / 2f);
-
-        return new Vector3(worldX, 0, worldZ);
     }
 
     private Color GetColorForType(TileType type, int owner)
