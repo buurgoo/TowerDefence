@@ -17,9 +17,13 @@ public abstract class Unit : NetworkBehaviour
     public float AttackRange => attackRange;
     public int AttackDamage => attackDamage;
 
-    public void Initialize(int ownerPlayerId)
+    private EnemyPool enemyPool;
+
+
+    public void Initialize(int ownerPlayerId, EnemyPool pool)
     {
         OwnerPlayerId = ownerPlayerId;
+        enemyPool = pool;
         currentHealth = maxHealth;
     }
 
@@ -34,9 +38,10 @@ public abstract class Unit : NetworkBehaviour
 
     private void Die()
     {
-        NetworkObject networkObject = GetComponent<NetworkObject>();
+        // NetworkObject networkObject = GetComponent<NetworkObject>();
 
-        if (networkObject != null && networkObject.IsSpawned) networkObject.Despawn();
-        else Destroy(gameObject);
+        // if (networkObject != null && networkObject.IsSpawned) networkObject.Despawn();
+        // else Destroy(gameObject);
+        enemyPool.ReturnToPool(this); 
     }
 }

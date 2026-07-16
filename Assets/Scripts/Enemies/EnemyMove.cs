@@ -19,7 +19,7 @@ public class EnemyMove : NetworkBehaviour {
         targetCastle = enemyCastle;
 
         unit = GetComponent<Unit>();
-        unit.Initialize(ownerPlayerId);
+        // unit.Initialize(ownerPlayerId);
 
         if (IsServer) StartCoroutine(UnitLoop());
     }

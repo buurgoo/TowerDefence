@@ -6,8 +6,9 @@ using UnityEngine;
 public class AiLoop : NetworkBehaviour
 {
     [SerializeField] private MapGenerator mapGenerator;
-    [SerializeField] private float aiTickInterval = 1f;
+    [SerializeField] private EnemyPool enemyPool;
     [SerializeField] private int aiPlayerId = 0;
+    [SerializeField] private float aiTickInterval = 5f; // temp
 
     private AiAgent _aiAgent;
 
@@ -40,6 +41,7 @@ public class AiLoop : NetworkBehaviour
         {
             case AiActionType.Attack:
                 Debug.Log($"AI agent Attack: {decision.UnitType}, " + $"target player: {decision.TargetPlayerId}");
+                enemyPool.SpawnUnit(aiPlayerId, decision.UnitType);
                 break;
 
             case AiActionType.Defend:
