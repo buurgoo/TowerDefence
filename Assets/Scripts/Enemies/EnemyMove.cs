@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 
-[RequireComponent(typeof(Unit))]
 public class EnemyMove : NetworkBehaviour {
     [SerializeField] private MapGenerator mapGenerator;
     [SerializeField] private float heightAboveGround = 0.35f;
@@ -34,7 +33,7 @@ public class EnemyMove : NetworkBehaviour {
             yield return StartCoroutine(MoveToEnemyCastle());
 
             if (unit.IsDead || targetCastle.IsDestroyed) yield break;
-            targetCastle.TakeDamage(unit.CastleDamage); // enemy castle boom boom
+            targetCastle.TakeDamage(unit.AttackDamage); // enemy castle boom boom
             yield return null;
         }
     }

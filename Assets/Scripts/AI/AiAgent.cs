@@ -25,7 +25,7 @@ public class AiAgent
         }
     }
 
-    private AIDecision ChooseAttack(bool hasSwordsman, bool hasArcher)
+    private AiDecision ChooseAttack(bool hasSwordsman, bool hasArcher)
     {
         int targetPlayerId = 1 - _aiPlayerId; 
 
@@ -38,7 +38,7 @@ public class AiAgent
         UnitType unitType = ChooseUnitToAttack(hasSwordsman, hasArcher);
         if (unitType == UnitType.None) return AiDecision.Wait();
         
-        return new AiDecision.Attack(targetPlayerId, unitType);
+        return AiDecision.Attack(targetPlayerId, unitType);
     }
 
     private AiDecision ChooseDefense(IReadOnlyList<Vector2Int> availableTowerPositions)
