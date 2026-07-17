@@ -72,7 +72,7 @@ public class Castle : NetworkBehaviour
         var instance = Instantiate(spawnableEnemies[enemy], this.transform);
         var instanceEnemy = instance.GetComponent<Enemy>();
         int enemyPlayer = (playerId == 1) ? 0 : 1;
-        instanceEnemy.setTarget(enemyPlayer);
+        instanceEnemy.SetTarget(enemyPlayer);
         instance.GetComponent<NetworkObject>().Spawn();
     }
 }

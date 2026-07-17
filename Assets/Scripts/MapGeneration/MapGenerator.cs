@@ -5,9 +5,7 @@ using Unity.Netcode;
 public class MapGenerator : MonoBehaviour
 {
     [Header("Generation Parameters")]
-    [SerializeField]
-    public GameObject castle;
-
+    [SerializeField] public GameObject castle;
     public int generationSeed = 42;
 
     [Header("Map Parameters")]
@@ -15,14 +13,14 @@ public class MapGenerator : MonoBehaviour
     public int mapHeight = 20;
     public float tileSize = 1f;
 
-    private TileData[,] mapGrid;
+    private TileData[,] _mapGrid;
     
     public int playerCount = 2;
     public int neutralBasesCount = 3;
     public int minDistanceBetweenObjects = 5;
 
-    private List<Vector2Int> criticalNodes = new List<Vector2Int>();
-    private List<Vector2Int> spacedObjects = new List<Vector2Int>();
+    private readonly List<Vector2Int> _criticalNodes = new List<Vector2Int>();
+    private readonly List<Vector2Int> _spacedObjects = new List<Vector2Int>();
 
     [Header("Tile Prefabs")]
     [SerializeField] private GameObject emptyTilePrefab;
@@ -40,19 +38,29 @@ public class MapGenerator : MonoBehaviour
     [SerializeField] private int forestClusterSize = 10;
     [SerializeField, Range(0f, 1f)] private float mineSpawnChance = 0.005f;
 
+    private Vector2Int[] _playerCastlePositions;
+
     public void GenerateMap()
     {
         Random.InitState(generationSeed);
 
-        mapGrid = new TileData[mapWidth, mapHeight];
-        criticalNodes.Clear();
-        spacedObjects.Clear();
+        _mapGrid = new TileData[mapWidth, mapHeight];
+        _criticalNodes.Clear();
+        _spacedObjects.Clear();
+        _playerCastlePositions = new Vector2Int[playerCount];
+
+        for (int i = 0; i < playerCount; i++)
+        {
+            _playerCastlePositions[i] = new Vector2Int(-1, -1);
+        }
 
         for (int x = 0; x < mapWidth; x++) {
             for (int y = 0; y < mapHeight; y++) {
-                mapGrid[x, y] = new TileData { GridPosition = new Vector2Int(x, y), CurrentType = TileType.Empty };
+                _mapGrid[x, y] = new TileData { GridPosition = new Vector2Int(x, y), CurrentType = TileType.Empty };
             }
         }
+
+        bool isHostOrServer = NetworkManager.Singleton != null && (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer);
 
         for (int i = 0; i < playerCount; i++) {
             Vector2Int pos = FindValidPosition();
@@ -61,18 +69,25 @@ public class MapGenerator : MonoBehaviour
                 Debug.LogError("Failed to place castle.");
                 continue;
             }
-            mapGrid[pos.x, pos.y].CurrentType = TileType.Castle;
-            mapGrid[pos.x, pos.y].OwnerPlayerId = i;
-            criticalNodes.Add(pos);
+            _mapGrid[pos.x, pos.y].CurrentType = TileType.Castle;
+            _mapGrid[pos.x, pos.y].OwnerPlayerId = i;
+            _criticalNodes.Add(pos);
+            _playerCastlePositions[i] = pos;
             
-            if (IsHost)
+            if (isHostOrServer && castle != null)
             {
                 Vector3 coords = GridToWorld(pos);
-                var instance = Instantiate(castle, coords, new Quaternion(0, 0, 0, 0));
+                var instance = Instantiate(castle, coords, Quaternion.identity);
                 var instanceCastle = instance.GetComponent<Castle>();
-                instanceCastle.setPlayerId(i);
-                instanceCastle.setMaxHP(20);
-                instance.GetComponent<NetworkObject>().Spawn();
+                if (instanceCastle != null)
+                {
+                    instanceCastle.setPlayerId(i);
+                    instanceCastle.setMaxHP(20);
+                }
+                if (instance.GetComponent<NetworkObject>() != null)
+                {
+                    instance.GetComponent<NetworkObject>().Spawn();
+                }
             }
         }
 
@@ -84,8 +99,8 @@ public class MapGenerator : MonoBehaviour
                 Debug.LogError("Failed to place outpost.");
                 continue;
             }
-            mapGrid[pos.x, pos.y].CurrentType = TileType.Outpost;
-            criticalNodes.Add(pos);
+            _mapGrid[pos.x, pos.y].CurrentType = TileType.Outpost;
+            _criticalNodes.Add(pos);
         }
 
         GenerateRoadNetwork();
@@ -99,7 +114,7 @@ public class MapGenerator : MonoBehaviour
         {
             for (int y = 0; y < mapHeight; y++) 
             {
-                TileData tile = mapGrid[x, y];
+                TileData tile = _mapGrid[x, y];
                 GameObject prefabToSpawn = GetPrefabForType(tile.CurrentType);
 
                 if (prefabToSpawn != null)
@@ -115,7 +130,6 @@ public class MapGenerator : MonoBehaviour
                         if (castleModelPrefab != null)
                         {
                             Vector3 structurePos = GridToWorld(new Vector2Int(x, y), height: 0.2f); 
-                        
                             GameObject castleBuilding = Instantiate(castleModelPrefab, structurePos, Quaternion.identity, spawnedTile.transform);
                             castleBuilding.name = $"Castle_Structure_P{tile.OwnerPlayerId}";
                         }
@@ -143,8 +157,6 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    // HELPERS ONLY BELOW
-
     private Vector2Int FindValidPosition()
     {
         int attempts = 0;
@@ -154,9 +166,9 @@ public class MapGenerator : MonoBehaviour
             int y = Random.Range(0, mapHeight);
             Vector2Int pos = new Vector2Int(x, y);
 
-            if (mapGrid[x, y].CurrentType == TileType.Empty && IsFarEnough(pos))
+            if (_mapGrid[x, y].CurrentType == TileType.Empty && IsFarEnough(pos))
             {
-                spacedObjects.Add(pos);
+                _spacedObjects.Add(pos);
                 return pos;
             }
             attempts++;
@@ -166,8 +178,8 @@ public class MapGenerator : MonoBehaviour
 
     private void GenerateRoadNetwork()
     {
-        for (int i = 0; i < criticalNodes.Count - 1; i++) {
-            CreateLineRoad(criticalNodes[i], criticalNodes[i + 1]);
+        for (int i = 0; i < _criticalNodes.Count - 1; i++) {
+            CreateLineRoad(_criticalNodes[i], _criticalNodes[i + 1]);
         }
     }
 
@@ -176,13 +188,13 @@ public class MapGenerator : MonoBehaviour
         Vector2Int current = start;
         while (current.x != end.x) {
             current.x += (end.x > current.x) ? 1 : -1;
-            if (mapGrid[current.x, current.y].CurrentType == TileType.Empty)
-                mapGrid[current.x, current.y].CurrentType = TileType.Road;
+            if (_mapGrid[current.x, current.y].CurrentType == TileType.Empty)
+                _mapGrid[current.x, current.y].CurrentType = TileType.Road;
         }
         while (current.y != end.y) {
             current.y += (end.y > current.y) ? 1 : -1;
-            if (mapGrid[current.x, current.y].CurrentType == TileType.Empty)
-                mapGrid[current.x, current.y].CurrentType = TileType.Road;
+            if (_mapGrid[current.x, current.y].CurrentType == TileType.Empty)
+                _mapGrid[current.x, current.y].CurrentType = TileType.Road;
         }
     }
 
@@ -195,14 +207,14 @@ public class MapGenerator : MonoBehaviour
 
         for (int x = 0; x < mapWidth; x++) {
             for (int y = 0; y < mapHeight; y++) {
-                if (mapGrid[x, y].CurrentType == TileType.Empty) {
+                if (_mapGrid[x, y].CurrentType == TileType.Empty) {
                     if (Random.value < mineSpawnChance)
                     {
                         Vector2Int pos = new Vector2Int(x, y);
                         if (IsFarEnough(pos))
                         {
-                            mapGrid[x, y].CurrentType = TileType.Mine;
-                            spacedObjects.Add(pos);
+                            _mapGrid[x, y].CurrentType = TileType.Mine;
+                            _spacedObjects.Add(pos);
                         }
                     }
                 }
@@ -224,15 +236,15 @@ public class MapGenerator : MonoBehaviour
             Vector2Int currentTile = openList[randomIndex];
             openList.RemoveAt(randomIndex);
 
-            if (mapGrid[currentTile.x, currentTile.y].CurrentType == TileType.Empty)
+            if (_mapGrid[currentTile.x, currentTile.y].CurrentType == TileType.Empty)
             {
-                mapGrid[currentTile.x, currentTile.y].CurrentType = TileType.Forest;
+                _mapGrid[currentTile.x, currentTile.y].CurrentType = TileType.Forest;
                 tilesSpawned++;
 
                 List<Vector2Int> neighbors = GetNeighbors(currentTile);
                 foreach (var neighbor in neighbors)
                 {
-                    if (mapGrid[neighbor.x, neighbor.y].CurrentType == TileType.Empty && !openList.Contains(neighbor))
+                    if (_mapGrid[neighbor.x, neighbor.y].CurrentType == TileType.Empty && !openList.Contains(neighbor))
                     {
                         openList.Add(neighbor);
                     }
@@ -248,7 +260,7 @@ public class MapGenerator : MonoBehaviour
         {
             int x = Random.Range(0, mapWidth);
             int y = Random.Range(0, mapHeight);
-            if (mapGrid[x, y].CurrentType == TileType.Empty) return new Vector2Int(x, y);
+            if (_mapGrid[x, y].CurrentType == TileType.Empty) return new Vector2Int(x, y);
             attempts++;
         }
         return new Vector2Int(-1, -1);
@@ -257,7 +269,7 @@ public class MapGenerator : MonoBehaviour
     private bool IsFarEnough(Vector2Int pos)
     {
         float minDistSq = minDistanceBetweenObjects * minDistanceBetweenObjects;
-        foreach (var other in spacedObjects)
+        foreach (var other in _spacedObjects)
         {
             if ((pos - other).sqrMagnitude < minDistSq)
                 return false;
@@ -275,54 +287,107 @@ public class MapGenerator : MonoBehaviour
         return neighbors;
     }
 
-    public List<Vector2Int> FindPath(Vector2Int startPos, Vector2Int targetPos)
+
+    public List<Vector2Int> FindPath(Vector2Int startPos, Vector2Int targetPos, bool onlyRoad)
     {
         var emptyPath = new List<Vector2Int>();
-        var queue = new Queue<Vector2Int>();
-        var visited = new HashSet<Vector2Int>();
-        var cameFrom = new Dictionary<Vector2Int, Vector2Int>();
+        if (_mapGrid == null) return emptyPath;
+        if (startPos == targetPos) return emptyPath;
 
-        if (mapGrid == null) return emptyPath;
+        List<Vector2Int> openSet = new List<Vector2Int> { startPos };
+        HashSet<Vector2Int> closedSet = new HashSet<Vector2Int>();
 
-        queue.Enqueue(startPos);
-        visited.Add(startPos);
+        Dictionary<Vector2Int, Vector2Int> cameFrom = new Dictionary<Vector2Int, Vector2Int>();
+        Dictionary<Vector2Int, float> gScore = new Dictionary<Vector2Int, float> { [startPos] = 0 };
+        Dictionary<Vector2Int, float> fScore = new Dictionary<Vector2Int, float> { [startPos] = GetManhattanDistance(startPos, targetPos) };
 
-        while (queue.Count > 0)
+        while (openSet.Count > 0)
         {
-            Vector2Int current = queue.Dequeue();
-            if (current == targetPos) break;
+            Vector2Int current = openSet[0];
+            float lowestF = fScore.ContainsKey(current) ? fScore[current] : float.MaxValue;
+            int lowestIndex = 0;
+
+            for (int i = 1; i < openSet.Count; i++)
+            {
+                float score = fScore.ContainsKey(openSet[i]) ? fScore[openSet[i]] : float.MaxValue;
+                if (score < lowestF)
+                {
+                    lowestF = score;
+                    current = openSet[i];
+                    lowestIndex = i;
+                }
+            }
+
+            if (current == targetPos)
+            {
+                return ReconstructPath(cameFrom, current);
+            }
+
+            openSet.RemoveAt(lowestIndex);
+            closedSet.Add(current);
 
             foreach (Vector2Int neighbor in GetNeighbors(current))
             {
-                if (visited.Contains(neighbor)) continue;
-                if (!IsWalkable(neighbor)) continue;
+                if (closedSet.Contains(neighbor)) continue;
 
-                visited.Add(neighbor);
-                cameFrom[neighbor] = current;
-                queue.Enqueue(neighbor);
+                if (onlyRoad)
+                {
+                    TileType type = _mapGrid[neighbor.x, neighbor.y].CurrentType;
+                    if (type != TileType.Road && neighbor != targetPos && neighbor != startPos) continue;
+                }
+                else if (!IsWalkable(neighbor))
+                {
+                    continue;
+                }
+
+                float tentativeGScore = gScore[current] + 1;
+                if (!gScore.ContainsKey(neighbor) || tentativeGScore < gScore[neighbor])
+                {
+                    cameFrom[neighbor] = current;
+                    gScore[neighbor] = tentativeGScore;
+                    fScore[neighbor] = tentativeGScore + GetManhattanDistance(neighbor, targetPos);
+
+                    if (!openSet.Contains(neighbor))
+                    {
+                        openSet.Add(neighbor);
+                    }
+                }
             }
         }
 
-        if (startPos != targetPos && !cameFrom.ContainsKey(targetPos)) return emptyPath;
-        var path = new List<Vector2Int>();
-        Vector2Int pathCell = targetPos;
-        while (pathCell != startPos)
-        {
-            path.Add(pathCell);
-            pathCell = cameFrom[pathCell];
-        }
+        return emptyPath;
+    }
 
-        path.Reverse();
-        return path;
+    private float GetManhattanDistance(Vector2Int a, Vector2Int b)
+    {
+        return Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y);
+    }
+
+    private List<Vector2Int> ReconstructPath(Dictionary<Vector2Int, Vector2Int> cameFrom, Vector2Int current)
+    {
+        List<Vector2Int> totalPath = new List<Vector2Int> { current };
+        while (cameFrom.ContainsKey(current))
+        {
+            current = cameFrom[current];
+            totalPath.Add(current);
+        }
+        totalPath.Reverse();
+        return totalPath;
     }
 
     public Vector2Int GetCastlePosition(int playerId) 
     {
+        if (_playerCastlePositions != null && playerId >= 0 && playerId < _playerCastlePositions.Length)
+        {
+            if (_playerCastlePositions[playerId] != new Vector2Int(-1, -1))
+                return _playerCastlePositions[playerId];
+        }
+
         for (int x = 0; x < mapWidth; x++)
         {
             for (int y = 0; y < mapHeight; y++)
             {
-                TileData tile = mapGrid[x, y];
+                TileData tile = _mapGrid[x, y];
                 if (tile.CurrentType == TileType.Castle && tile.OwnerPlayerId == playerId) 
                     return new Vector2Int(x, y); 
             }
@@ -332,7 +397,7 @@ public class MapGenerator : MonoBehaviour
 
     private bool IsWalkable(Vector2Int pos)
     {
-        TileType tileType = mapGrid[pos.x, pos.y].CurrentType;
+        TileType tileType = _mapGrid[pos.x, pos.y].CurrentType;
         return tileType != TileType.Forest && tileType != TileType.Mine;
     }
 
@@ -348,19 +413,19 @@ public class MapGenerator : MonoBehaviour
     public TileData GetTileDataAt(int x, int y)
     {
         if (x >= 0 && x < mapWidth && y >= 0 && y < mapHeight)
-            return mapGrid[x, y];
+            return _mapGrid[x, y];
         return null;
     }
     
     public GameObject GetCastleObject(int playerId)
     {
-        if (mapGrid == null) return null;
+        if (_mapGrid == null) return null;
 
         for (int x = 0; x < mapWidth; x++)
         {
             for (int y = 0; y < mapHeight; y++)
             {
-                TileData tile = mapGrid[x, y];
+                TileData tile = _mapGrid[x, y];
                 if (tile.CurrentType == TileType.Castle && tile.OwnerPlayerId == playerId)
                 {
                     return tile.SpawnedObjectRef; 
@@ -375,7 +440,7 @@ public class MapGenerator : MonoBehaviour
         var availablePositions = new List<Vector2Int>();
         var addedPositions = new HashSet<Vector2Int>();
 
-        if (mapGrid == null) return availablePositions;
+        if (_mapGrid == null) return availablePositions;
 
         Vector2Int aiCastlePosition = GetCastlePosition(playerId);
         Vector2Int enemyCastlePosition = GetCastlePosition(targetPlayerId);
@@ -385,14 +450,14 @@ public class MapGenerator : MonoBehaviour
 
         List<Vector2Int> roadPath = FindPath(aiCastlePosition, enemyCastlePosition, onlyRoad: true);
 
-    foreach (Vector2Int roadCell in roadPath)
-    {
-        foreach (Vector2Int neighbor in GetNeighbors(roadCell))
+        foreach (Vector2Int roadCell in roadPath)
         {
-            if (mapGrid[neighbor.x, neighbor.y].CurrentType != TileType.Empty) continue;
-            if (addedPositions.Add(neighbor)) availablePositions.Add(neighbor);
+            foreach (Vector2Int neighbor in GetNeighbors(roadCell))
+            {
+                if (_mapGrid[neighbor.x, neighbor.y].CurrentType != TileType.Empty) continue;
+                if (addedPositions.Add(neighbor)) availablePositions.Add(neighbor);
+            }
         }
-    }
-    return availablePositions;
+        return availablePositions;
     }
 }
