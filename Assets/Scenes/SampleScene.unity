@@ -1460,6 +1460,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 6598280817289867840, guid: a277b9af43299e1488475a1d543fda46, type: 3}
     - target: {fileID: 6808437175058216901, guid: 56b5bf2891f8f574d8f53f1a854aa7b3, type: 3}
+      propertyPath: castleModelPrefab
+      value: 
+      objectReference: {fileID: 7490257118019768077, guid: de1adde63c478094e86fe4646ca12097, type: 3}
+    - target: {fileID: 6808437175058216901, guid: 56b5bf2891f8f574d8f53f1a854aa7b3, type: 3}
       propertyPath: outpostTilePrefab
       value: 
       objectReference: {fileID: 6660338848012842726, guid: 48e6dace0d9123a4bab838a8e03eaf87, type: 3}

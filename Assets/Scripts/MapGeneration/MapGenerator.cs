@@ -25,6 +25,9 @@ public class MapGenerator : MonoBehaviour
     [SerializeField] private GameObject mineTilePrefab;
     [SerializeField] private GameObject castleTilePrefab;
     [SerializeField] private GameObject outpostTilePrefab;
+    
+    [Header("Structure Prefabs")]
+    [SerializeField] private GameObject castleModelPrefab;
 
     [Header("Resource Settings")]
     [SerializeField] private int forestClusterCount = 5;
@@ -85,17 +88,26 @@ public class MapGenerator : MonoBehaviour
 
                 if (prefabToSpawn != null)
                 {
-                    Vector3 worldPos = GridToWorld(new Vector2Int(x, y), height: 0f);
-                    
+                    Vector3 worldPos = GridToWorld(new Vector2Int(x, y), height: 0f); 
                     GameObject spawnedTile = Instantiate(prefabToSpawn, worldPos, Quaternion.identity, this.transform);
                     spawnedTile.name = $"Tile_{tile.CurrentType}_{x}_{y}";
-
-                    
+                
                     tile.SpawnedObjectRef = spawnedTile;
-                }
-                else
-                {
-                    Debug.LogWarning($"No prefab assigned for tile type: {tile.CurrentType}");
+
+                    if (tile.CurrentType == TileType.Castle)
+                    {
+                        if (castleModelPrefab != null)
+                        {
+                            Vector3 structurePos = GridToWorld(new Vector2Int(x, y), height: 0.2f); 
+                        
+                            GameObject castleBuilding = Instantiate(castleModelPrefab, structurePos, Quaternion.identity, spawnedTile.transform);
+                            castleBuilding.name = $"Castle_Structure_P{tile.OwnerPlayerId}";
+                        }
+                        else
+                        {
+                            Debug.LogWarning("You forgot to assign the castleModelPrefab in the Inspector!");
+                        }
+                    }
                 }
             }
         }
