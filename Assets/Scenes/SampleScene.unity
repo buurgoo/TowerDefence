@@ -1439,6 +1439,30 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6808437175058216901, guid: 56b5bf2891f8f574d8f53f1a854aa7b3, type: 3}
+      propertyPath: mineTilePrefab
+      value: 
+      objectReference: {fileID: 8604249756380038062, guid: 9dc5cdbba6914254ca5734563be8e6b6, type: 3}
+    - target: {fileID: 6808437175058216901, guid: 56b5bf2891f8f574d8f53f1a854aa7b3, type: 3}
+      propertyPath: roadTilePrefab
+      value: 
+      objectReference: {fileID: 7472737340047471395, guid: 878a746195f639340b6096c75f2f744a, type: 3}
+    - target: {fileID: 6808437175058216901, guid: 56b5bf2891f8f574d8f53f1a854aa7b3, type: 3}
+      propertyPath: emptyTilePrefab
+      value: 
+      objectReference: {fileID: 1581310768777070123, guid: 795724674320a9340b5a9687fa6fa348, type: 3}
+    - target: {fileID: 6808437175058216901, guid: 56b5bf2891f8f574d8f53f1a854aa7b3, type: 3}
+      propertyPath: castleTilePrefab
+      value: 
+      objectReference: {fileID: 8398341771605352964, guid: ad0fb51022b79cc4e9e539129f70cc36, type: 3}
+    - target: {fileID: 6808437175058216901, guid: 56b5bf2891f8f574d8f53f1a854aa7b3, type: 3}
+      propertyPath: forestTilePrefab
+      value: 
+      objectReference: {fileID: 6598280817289867840, guid: a277b9af43299e1488475a1d543fda46, type: 3}
+    - target: {fileID: 6808437175058216901, guid: 56b5bf2891f8f574d8f53f1a854aa7b3, type: 3}
+      propertyPath: outpostTilePrefab
+      value: 
+      objectReference: {fileID: 6660338848012842726, guid: 48e6dace0d9123a4bab838a8e03eaf87, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
