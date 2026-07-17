@@ -1,9 +1,10 @@
 fileFormatVersion: 2
-guid: b46ab043446148fa825845f3e4bfa90b
+guid: 5deaa9b2539b2cb4281e6860d2843da7
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
+  - spawnButton: {instanceID: 0}
   - castle: {fileID: 7060205293358873825, guid: f285fb93e3acb1a4aabf1b7e41fa3a14, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}

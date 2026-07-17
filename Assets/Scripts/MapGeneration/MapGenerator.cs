@@ -1,10 +1,16 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
 
 public class MapGenerator : MonoBehaviour
 {
+    [Header("Generation Parameters")]
+    [SerializeField]
+    public GameObject castle;
+
     public int generationSeed = 42;
 
+    [Header("Map Parameters")]
     public int mapWidth = 20;
     public int mapHeight = 20;
     public float tileSize = 1f;
@@ -58,6 +64,16 @@ public class MapGenerator : MonoBehaviour
             mapGrid[pos.x, pos.y].CurrentType = TileType.Castle;
             mapGrid[pos.x, pos.y].OwnerPlayerId = i;
             criticalNodes.Add(pos);
+            
+            if (IsHost)
+            {
+                Vector3 coords = GridToWorld(pos);
+                var instance = Instantiate(castle, coords, new Quaternion(0, 0, 0, 0));
+                var instanceCastle = instance.GetComponent<Castle>();
+                instanceCastle.setPlayerId(i);
+                instanceCastle.setMaxHP(20);
+                instance.GetComponent<NetworkObject>().Spawn();
+            }
         }
 
         for (int i = 0; i < neutralBasesCount; i++)
@@ -352,5 +368,31 @@ public class MapGenerator : MonoBehaviour
             }
         }
         return null;
+    }
+
+    public List<Vector2Int> GetTowerPosBtwPlayers(int playerId, int targetPlayerId)
+    {
+        var availablePositions = new List<Vector2Int>();
+        var addedPositions = new HashSet<Vector2Int>();
+
+        if (mapGrid == null) return availablePositions;
+
+        Vector2Int aiCastlePosition = GetCastlePosition(playerId);
+        Vector2Int enemyCastlePosition = GetCastlePosition(targetPlayerId);
+
+        if (aiCastlePosition == new Vector2Int(-1, -1) || enemyCastlePosition == new Vector2Int(-1, -1))
+            return availablePositions;
+
+        List<Vector2Int> roadPath = FindPath(aiCastlePosition, enemyCastlePosition, onlyRoad: true);
+
+    foreach (Vector2Int roadCell in roadPath)
+    {
+        foreach (Vector2Int neighbor in GetNeighbors(roadCell))
+        {
+            if (mapGrid[neighbor.x, neighbor.y].CurrentType != TileType.Empty) continue;
+            if (addedPositions.Add(neighbor)) availablePositions.Add(neighbor);
+        }
+    }
+    return availablePositions;
     }
 }
