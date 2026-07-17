@@ -335,4 +335,22 @@ public class MapGenerator : MonoBehaviour
             return mapGrid[x, y];
         return null;
     }
+    
+    public GameObject GetCastleObject(int playerId)
+    {
+        if (mapGrid == null) return null;
+
+        for (int x = 0; x < mapWidth; x++)
+        {
+            for (int y = 0; y < mapHeight; y++)
+            {
+                TileData tile = mapGrid[x, y];
+                if (tile.CurrentType == TileType.Castle && tile.OwnerPlayerId == playerId)
+                {
+                    return tile.SpawnedObjectRef; 
+                }
+            }
+        }
+        return null;
+    }
 }
