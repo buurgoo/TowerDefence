@@ -9,8 +9,8 @@ public class Castle : NetworkBehaviour
 
 
     [Header("Health")]
-    private int maxHp = 0;
-    private int currentHp = 0;
+    private int maxHp = 10000;
+    private int currentHp = 10000;
 
     [SerializeField]
     public GameObject goblin;

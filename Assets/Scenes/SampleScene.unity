@@ -1617,6 +1617,7 @@ GameObject:
   - component: {fileID: 2038010034}
   - component: {fileID: 2038010035}
   - component: {fileID: 2038010036}
+  - component: {fileID: 2038010037}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1694,7 +1695,28 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpawnUI
   spawnButton: {fileID: 1241159584}
-  castle: {fileID: 7060205293358873825, guid: f285fb93e3acb1a4aabf1b7e41fa3a14, type: 3}
+  enemyPool: {fileID: 2038010037}
+  ownerPlayerId: 0
+  unitType: 1
+--- !u!114 &2038010037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2038010032}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d9b16c180b0c4189a14a899068508e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyPool
+  ShowTopMostFoldoutHeaderGroup: 1
+  archerPrefab: {fileID: 3782343356512341927, guid: b367697416d9b4a2283e6a5e695394c8, type: 3}
+  swordsmanPrefab: {fileID: 3782343356512341927, guid: 82402c25714544ff3b7dfc715941a57b, type: 3}
+  mapGenerator: {fileID: 7933355413383087477}
+  player0Castle: {fileID: 0}
+  player1Castle: {fileID: 0}
+  poolSize: 20
 --- !u!1 &2068270054
 GameObject:
   m_ObjectHideFlags: 0
