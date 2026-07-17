@@ -38,7 +38,14 @@ public class EnemyPool : NetworkBehaviour
     public Unit SpawnUnit(int ownerPlayerId, UnitType unitType)
     {
         if (!IsServer) return null;
-        
+
+        FindPlayerCastles();
+        if (player0Castle == null || player1Castle == null)
+        {
+            Debug.LogError("EnemyPool: castles were not found.");
+            return null;
+        }
+
         if (CountActiveUnits() >= poolSize)
         {
             Debug.LogWarning($"Maximum number of active units reached: {poolSize}");
@@ -55,6 +62,8 @@ public class EnemyPool : NetworkBehaviour
 
         int targetPlayerId = 1 - ownerPlayerId;
         Castle targetCastle = targetPlayerId == 0 ? player0Castle : player1Castle;
+        Vector2Int spawnCell = mapGenerator.GetCastlePosition(ownerPlayerId);
+        unit.transform.position = mapGenerator.GridToWorld(spawnCell, 0.35f);
         unit.gameObject.SetActive(true);
         NetworkObject networkObject = unit.GetComponent<NetworkObject>();
         if (networkObject != null && !networkObject.IsSpawned) networkObject.Spawn();
@@ -88,5 +97,17 @@ public class EnemyPool : NetworkBehaviour
         NetworkObject networkObject = unit.GetComponent<NetworkObject>();
         if (networkObject != null && networkObject.IsSpawned) networkObject.Despawn(false);
         unit.gameObject.SetActive(false);
+    }
+
+    private void FindPlayerCastles()
+    {
+        Castle[] castles = FindObjectsByType<Castle>(FindObjectsSortMode.None);
+
+        foreach (Castle castle in castles)
+        {
+            int playerId = castle.getPlayerId();
+            if (playerId == 0) player0Castle = castle;
+            else if (playerId == 1) player1Castle = castle;
+        }
     }
 }

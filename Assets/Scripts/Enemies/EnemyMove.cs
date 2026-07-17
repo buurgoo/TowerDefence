@@ -25,6 +25,8 @@ public class EnemyMove : NetworkBehaviour {
 
     private IEnumerator UnitLoop()
     {
+        RespawnAtOwnerCastle();
+        
         while (!unit.IsDead && targetCastle.getCurrentHP() > 0)
         {
             RespawnAtOwnerCastle();
