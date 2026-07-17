@@ -19,57 +19,23 @@ public class EnemyMove : NetworkBehaviour {
         targetCastle = enemyCastle;
 
         unit = GetComponent<Unit>();
-        // unit.Initialize(ownerPlayerId);
 
         if (IsServer) StartCoroutine(UnitLoop());
     }
 
     private IEnumerator UnitLoop()
     {
-        while (!unit.IsDead && !targetCastle.IsDestroyed)
+        while (!unit.IsDead && targetCastle.getCurrentHP() > 0)
         {
             RespawnAtOwnerCastle();
 
             yield return StartCoroutine(MoveToEnemyCastle());
 
-            if (unit.IsDead || targetCastle.IsDestroyed) yield break;
-            targetCastle.TakeDamage(unit.AttackDamage); // enemy castle boom boom
+            if (unit.IsDead || targetCastle.getCurrentHP() <= 0) yield break;
+            targetCastle.damage(unit.AttackDamage); // enemy castle boom boom
             yield return null;
         }
     }
-
-    // private IEnumerator Start() {
-    //     yield return null;
-
-    //     if (mapGenerator == null) yield break;
-
-    //     Vector2Int startCell = mapGenerator.GetCastlePosition(0);
-    //     Vector2Int targetCell = mapGenerator.GetCastlePosition(targetPlayerId);
-
-    //     if (startCell.x < 0 || targetCell.x < 0) yield break;
-        
-    //     List<Vector2Int> path = mapGenerator.FindPath(startCell, targetCell);
-    //     Debug.Log("Enemy: path length = " + path.Count);
-    //     if (path.Count == 0 && startCell != targetCell) yield break;
-
-    //     transform.position = mapGenerator.GridToWorld(startCell, heightAboveGround); 
-
-    //     foreach (Vector2Int cell in path)
-    //     {
-    //         Vector3 targetPosition = mapGenerator.GridToWorld(cell, heightAboveGround);
-
-    //         while (Vector3.Distance(transform.position, targetPosition) > 0.01f)
-    //         {
-    //                 transform.position = Vector3.MoveTowards(
-    //                     transform.position, 
-    //                     targetPosition, 
-    //                     moveSpeed * Time.deltaTime
-    //                 );
-    //                 yield return null;
-    //         }        
-    //         transform.position = targetPosition;
-    //     }
-    // }
 
     private IEnumerator MoveToEnemyCastle()
     {
@@ -89,15 +55,18 @@ public class EnemyMove : NetworkBehaviour {
 
                 transform.position = Vector3.MoveTowards(transform.position, destination, unit.MoveSpeed * Time.deltaTime);
                 if (Vector3.Distance(transform.position, destination) <= 0.01f) break;
+                                
                 yield return null;
+
             }
 
             if (unit.IsDead) yield break;
             transform.position = destination;
+
         }
     }
 
-    private void RespawnAtOwnerCastle()
+    private void RespawnAtOwnerCastle() 
     {
         if (unit.IsDead) return;
         Vector2Int ownerCastleCell = mapGenerator.GetCastlePosition(ownerPlayerId);
