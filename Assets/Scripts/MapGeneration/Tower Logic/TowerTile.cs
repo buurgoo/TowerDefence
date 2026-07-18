@@ -9,6 +9,8 @@ public class TowerTile : TileData
     public int attackDamage = 20;
     public float attackCooldown = 1f;
 
+    public Tower tower;
+
     //public void Initialize(int ownerPlayerId)
     //{
     //    OwnerPlayerId = ownerPlayerId;

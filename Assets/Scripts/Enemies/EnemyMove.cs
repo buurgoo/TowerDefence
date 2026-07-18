@@ -53,10 +53,10 @@ public class EnemyMove : NetworkBehaviour
             if (mapGenerator.GetTileDataAt(cell).CurrentType == TileType.Tower)
             {
                 TowerTile towerTile = mapGenerator.GetTileDataAt(cell) as TowerTile;
-                TowerBehaviour tower = new TowerBehaviour(towerTile);
+                Tower tower = towerTile.tower;
 
                 if (Vector3.Distance(transform.position, 
-                    mapGenerator.GridToWorld(cell, heightAboveGround)) <= towerTile.attackRange)
+                    mapGenerator.GridToWorld(cell, heightAboveGround)) <= tower.attackRange)
                 {
                     tower.attack(unit);
                 }
