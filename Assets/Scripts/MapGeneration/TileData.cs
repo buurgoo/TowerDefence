@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public enum TileType { Empty, Road, Forest, Mine, Castle, Outpost }
+public enum TileType { Empty, Road, Forest, Mine, Castle, Outpost, Tower }
 
 [System.Serializable]
 public class TileData

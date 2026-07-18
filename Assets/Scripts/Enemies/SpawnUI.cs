@@ -42,12 +42,7 @@ public class SpawnUI : NetworkBehaviour
     public void SpawnButtonOnClick()
     {
         Debug.Log($"Spawn button clicked by player {ownerPlayerId}.");
-        // var instanceCastle = castle.GetComponent<Castle>();
-        // Debug.Log($"Castle id = {instanceCastle.getPlayerId()}");
-        // if (instanceCastle.getPlayerId() == player)
-        // {
-        //     instanceCastle.SpawnRpc("goblin");
-        // }
+
         if (enemyPool == null) enemyPool = GetComponent<EnemyPool>();
 
         if (enemyPool == null)

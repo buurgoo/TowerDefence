@@ -19,7 +19,8 @@ public class EnemyPool : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        if (!IsServer) return;
+        if (!IsHost) return;
+
         CreatePool(archerPrefab);
         CreatePool(swordsmanPrefab);
     }
@@ -37,7 +38,7 @@ public class EnemyPool : NetworkBehaviour
 
     public Unit SpawnUnit(int ownerPlayerId, UnitType unitType)
     {
-        if (!IsServer) return null;
+        if (!IsHost) return null;
 
         FindPlayerCastles();
         if (player0Castle == null || player1Castle == null)
@@ -65,8 +66,10 @@ public class EnemyPool : NetworkBehaviour
         Vector2Int spawnCell = mapGenerator.GetCastlePosition(ownerPlayerId);
         unit.transform.position = mapGenerator.GridToWorld(spawnCell, 0.35f);
         unit.gameObject.SetActive(true);
+
         NetworkObject networkObject = unit.GetComponent<NetworkObject>();
         if (networkObject != null && !networkObject.IsSpawned) networkObject.Spawn();
+
         unit.Initialize(ownerPlayerId, this);
         EnemyMove movement = unit.GetComponent<EnemyMove>();
         movement.Initialize(mapGenerator, ownerPlayerId, targetPlayerId, targetCastle);
@@ -93,7 +96,8 @@ public class EnemyPool : NetworkBehaviour
 
     public void ReturnToPool(Unit unit)
     {
-        if (!IsServer || unit == null) return;
+        if (!IsHost || unit == null) return;
+
         NetworkObject networkObject = unit.GetComponent<NetworkObject>();
         if (networkObject != null && networkObject.IsSpawned) networkObject.Despawn(false);
         unit.gameObject.SetActive(false);

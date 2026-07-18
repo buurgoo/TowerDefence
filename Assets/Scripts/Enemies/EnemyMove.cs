@@ -3,7 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 
-public class EnemyMove : NetworkBehaviour {
+public class EnemyMove : NetworkBehaviour 
+{
     [SerializeField] private MapGenerator mapGenerator;
     [SerializeField] private float heightAboveGround = 0.35f;
     private Unit unit;
@@ -20,23 +21,24 @@ public class EnemyMove : NetworkBehaviour {
 
         unit = GetComponent<Unit>();
 
-        if (IsServer) StartCoroutine(UnitLoop());
+        if (IsHost) StartCoroutine(UnitLoop());
     }
 
     private IEnumerator UnitLoop()
     {
-        RespawnAtOwnerCastle();
-        
-        while (!unit.IsDead && targetCastle.getCurrentHP() > 0)
-        {
+        //RespawnAtOwnerCastle();
+
+        //while (!unit.IsDead && targetCastle.getCurrentHP() > 0)
+        //{
             RespawnAtOwnerCastle();
 
             yield return StartCoroutine(MoveToEnemyCastle());
 
-            if (unit.IsDead || targetCastle.getCurrentHP() <= 0) yield break;
-            targetCastle.damage(unit.AttackDamage); // enemy castle boom boom
+        //    if (unit.IsDead || targetCastle.getCurrentHP() <= 0) yield break;
+        //    targetCastle.damage(unit.AttackDamage); // enemy castle boom boom
+            unit.Die();
             yield return null;
-        }
+        //}
     }
 
     private IEnumerator MoveToEnemyCastle()
@@ -48,6 +50,18 @@ public class EnemyMove : NetworkBehaviour {
 
         foreach (Vector2Int cell in path)
         {
+            if (mapGenerator.GetTileDataAt(cell).CurrentType == TileType.Tower)
+            {
+                TowerTile towerTile = mapGenerator.GetTileDataAt(cell) as TowerTile;
+                TowerBehaviour tower = new TowerBehaviour(towerTile);
+
+                if (Vector3.Distance(transform.position, 
+                    mapGenerator.GridToWorld(cell, heightAboveGround)) <= towerTile.attackRange)
+                {
+                    tower.attack(unit);
+                }
+            }
+
             Vector3 destination = mapGenerator.GridToWorld(cell, heightAboveGround);
 
             while (!unit.IsDead)
@@ -59,18 +73,17 @@ public class EnemyMove : NetworkBehaviour {
                 if (Vector3.Distance(transform.position, destination) <= 0.01f) break;
                                 
                 yield return null;
-
             }
 
             if (unit.IsDead) yield break;
             transform.position = destination;
-
         }
     }
 
     private void RespawnAtOwnerCastle() 
     {
         if (unit.IsDead) return;
+
         Vector2Int ownerCastleCell = mapGenerator.GetCastlePosition(ownerPlayerId);
         transform.position = mapGenerator.GridToWorld(ownerCastleCell, heightAboveGround);
     }

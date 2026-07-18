@@ -10,7 +10,7 @@ public abstract class Unit : NetworkBehaviour
 
     private int currentHealth;
 
-    public int OwnerPlayerId { get; private set; }
+    public int OwnerPlayerId = -1;
 
     public bool IsDead => currentHealth <= 0;
     public float MoveSpeed => moveSpeed;
@@ -29,14 +29,15 @@ public abstract class Unit : NetworkBehaviour
 
     public void TakeDamage(int damage)
     {
-        if (!IsServer || IsDead) return;
+        if (!IsHost || IsDead) return;
+
         currentHealth -= damage;
         Debug.Log($"{name} received {damage} damage. HP: {currentHealth}/{maxHealth}");
 
         if (currentHealth <= 0) Die(); // oh no! You die(
     }
 
-    private void Die()
+    public void Die()
     {
         // NetworkObject networkObject = GetComponent<NetworkObject>();
 

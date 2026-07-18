@@ -287,7 +287,6 @@ public class MapGenerator : MonoBehaviour
         return neighbors;
     }
 
-
     public List<Vector2Int> FindPath(Vector2Int startPos, Vector2Int targetPos, bool onlyRoad)
     {
         var emptyPath = new List<Vector2Int>();
@@ -416,7 +415,14 @@ public class MapGenerator : MonoBehaviour
             return _mapGrid[x, y];
         return null;
     }
-    
+
+    public TileData GetTileDataAt(Vector2Int pos)
+    {
+        if (pos.x >= 0 && pos.x < mapWidth && pos.y >= 0 && pos.y < mapHeight)
+            return _mapGrid[pos.x, pos.y];
+        return null;
+    }
+
     public GameObject GetCastleObject(int playerId)
     {
         if (_mapGrid == null) return null;
