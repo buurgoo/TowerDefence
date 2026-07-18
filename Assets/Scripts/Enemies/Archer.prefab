@@ -12,13 +12,12 @@ GameObject:
   - component: {fileID: 3455416212212953042}
   - component: {fileID: 1515395815674602426}
   - component: {fileID: 2939509224457698404}
+  - component: {fileID: 5248818588289736526}
   - component: {fileID: -3677745880684170876}
-  - component: {fileID: 4451769796998899847}
-  - component: {fileID: 7734657779840273909}
-  - component: {fileID: -8519836702539670435}
-  - component: {fileID: -5006885397192068348}
+  - component: {fileID: 8718511855913443072}
+  - component: {fileID: -3751817906469684832}
   m_Layer: 0
-  m_Name: Enemy
+  m_Name: Archer
   m_TagString: Untagged
   m_Icon: {fileID: 5132851093641282708, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
@@ -33,7 +32,7 @@ Transform:
   m_GameObject: {fileID: 3782343356512341927}
   serializedVersion: 2
   m_LocalRotation: {x: 0.011104641, y: -0.00040491184, z: -0.03643683, w: 0.9992742}
-  m_LocalPosition: {x: 0.498, y: 0.32, z: 0.622}
+  m_LocalPosition: {x: 0.93, y: 0.27, z: 1.61}
   m_LocalScale: {x: 0.20383811, y: 0.20383811, z: 0.12230288}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -117,6 +116,32 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &5248818588289736526
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3782343356512341927}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 2922378823
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  <InScenePlaced>k__BackingField: 0
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!114 &-3677745880684170876
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -129,11 +154,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b041d95e99a4041b6a9b14dc22d56f49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyMove
+  ShowTopMostFoldoutHeaderGroup: 1
   mapGenerator: {fileID: 0}
-  targetPlayerId: 0
-  moveSpeed: 2
   heightAboveGround: 0.35
---- !u!114 &4451769796998899847
+--- !u!136 &8718511855913443072
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3782343356512341927}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 0.99999994
+  m_Direction: 1
+  m_Center: {x: 0, y: -0.00000011920929, z: 0}
+--- !u!114 &-3751817906469684832
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -142,58 +189,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 3782343356512341927}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b041d95e99a4041b6a9b14dc22d56f49, type: 3}
+  m_Script: {fileID: 11500000, guid: ddd68c6395fa743449dea123bd5136eb, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyMove
-  mapGenerator: {fileID: 0}
-  targetPlayerId: 0
+  m_EditorClassIdentifier: Assembly-CSharp::Archer
+  ShowTopMostFoldoutHeaderGroup: 1
+  maxHealth: 100
+  attackDamage: 15
+  attackRange: 7
   moveSpeed: 2
-  heightAboveGround: 0.35
---- !u!114 &7734657779840273909
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3782343356512341927}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b041d95e99a4041b6a9b14dc22d56f49, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyMove
-  mapGenerator: {fileID: 0}
-  targetPlayerId: 0
-  moveSpeed: 2
-  heightAboveGround: 0.35
---- !u!114 &-8519836702539670435
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3782343356512341927}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b041d95e99a4041b6a9b14dc22d56f49, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyMove
-  mapGenerator: {fileID: 0}
-  targetPlayerId: 0
-  moveSpeed: 2
-  heightAboveGround: 0.35
---- !u!114 &-5006885397192068348
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3782343356512341927}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b041d95e99a4041b6a9b14dc22d56f49, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyMove
-  mapGenerator: {fileID: 0}
-  targetPlayerId: 1
-  moveSpeed: 2
-  heightAboveGround: 0.35
