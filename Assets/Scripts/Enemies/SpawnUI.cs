@@ -1,14 +1,18 @@
 using UnityEngine;
 using UnityEngine.UI;
+using Unity.Netcode;
 
-public class SpawnUI : MonoBehaviour
+public class SpawnUI : NetworkBehaviour
 {
     [SerializeField] public Button spawnButton;
     [SerializeField] private EnemyPool enemyPool;
-    [SerializeField] private int ownerPlayerId = 0;
+    [SerializeField] private int ownerPlayerId = -1;
     [SerializeField] private UnitType unitType = UnitType.Swordsman;
 
-    // private int player = 0;
+    public override void OnNetworkSpawn()
+    {
+        setPlayerIdRpc();
+    }
 
     void Start()
     {
@@ -28,9 +32,16 @@ public class SpawnUI : MonoBehaviour
         spawnButton.onClick.AddListener(SpawnButtonOnClick);
     }
 
+    [Rpc(SendTo.Me)]
+    public void setPlayerIdRpc()
+    {
+        if (IsHost) { ownerPlayerId = 0; }
+        else { ownerPlayerId = 1; }
+    }
+
     public void SpawnButtonOnClick()
     {
-        Debug.Log($"Spawn button clicked.");
+        Debug.Log($"Spawn button clicked by player {ownerPlayerId}.");
         // var instanceCastle = castle.GetComponent<Castle>();
         // Debug.Log($"Castle id = {instanceCastle.getPlayerId()}");
         // if (instanceCastle.getPlayerId() == player)
@@ -44,6 +55,14 @@ public class SpawnUI : MonoBehaviour
             Debug.LogError("EnemyPool is null");
             return;
         }
-        enemyPool.SpawnUnit(ownerPlayerId, unitType);
+        spawnUnitRpc(ownerPlayerId, unitType);
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void spawnUnitRpc(int ownerPlayerId, UnitType unitType)
+    {
+        if (IsHost) { 
+            enemyPool.SpawnUnit(ownerPlayerId, unitType); 
+        }
     }
 }
