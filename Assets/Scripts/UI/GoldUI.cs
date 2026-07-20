@@ -1,5 +1,6 @@
 ﻿using TMPro;
 using UnityEngine;
+using System.Collections;
 
 public class GoldUI : MonoBehaviour
 {
@@ -7,14 +8,27 @@ public class GoldUI : MonoBehaviour
     [SerializeField] private Inventory playerInventory; 
     [SerializeField] private TextMeshProUGUI goldText;
 
-    void Start()
+    public void StartTicking()
     {
-        if (playerInventory != null)
+        Debug.Log($"Gold counter started.");
+        StartCoroutine(GenerateGoldOverTime());
+    }
+
+    public IEnumerator GenerateGoldOverTime()
+    {
+        while (true)
         {
-            playerInventory.Gold.OnValueChanged += OnGoldChanged;
-            
-            UpdateGoldDisplay(playerInventory.Gold.Value);
+            yield return new WaitForSeconds(playerInventory.goldGenerationInterval);
+            playerInventory.Gold += playerInventory.goldPerTick;
+            UpdateGoldDisplay(playerInventory.Gold);
         }
+    }
+
+    public bool TrySpend(int amount)
+    {
+        bool result = playerInventory.TrySpendGold(amount);
+        UpdateGoldDisplay(playerInventory.Gold);
+        return result;
     }
 
     private void OnGoldChanged(int previousValue, int newValue)
@@ -30,11 +44,11 @@ public class GoldUI : MonoBehaviour
         }
     }
 
-    private void OnDestroy()
-    {
-        if (playerInventory != null)
-        {
-            playerInventory.Gold.OnValueChanged -= OnGoldChanged;
-        }
-    }
+    //private void OnDestroy()
+    //{
+    //    if (playerInventory != null)
+    //    {
+    //        playerInventory.Gold.OnValueChanged -= OnGoldChanged;
+    //    }
+    //}
 }

@@ -4,12 +4,16 @@ using Unity.Netcode;
 
 public class ConnectUI : NetworkBehaviour
 { 
-    [SerializeField] 
-    public Button hostButton;
-    [SerializeField] 
-    public Button clientButton;
     [SerializeField]
-    public MapGenerator mapGenerator;
+    private Button hostButton;
+    [SerializeField]
+    private Button clientButton;
+    [SerializeField]
+    private Button startButton;
+    [SerializeField]
+    private MapGenerator mapGenerator;
+    [SerializeField]
+    private GoldUI gold;
 
     private int _seed;
 
@@ -18,11 +22,27 @@ public class ConnectUI : NetworkBehaviour
     {
         hostButton.onClick.AddListener(HostButtonOnClick);
         clientButton.onClick.AddListener(ClientButtonOnClick);
+        startButton.onClick.AddListener(StartButtonOnClick);
     }
 
     public override void OnNetworkSpawn()
     {
         RequestSeedRpc();
+    }
+
+    public void StartButtonOnClick()
+    {
+        if (IsHost) 
+        {
+            startGameRpc();
+        }
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void startGameRpc()
+    {
+        mapGenerator.GenerateMap();
+        gold.StartTicking();
     }
 
     public void HostButtonOnClick()
@@ -44,7 +64,6 @@ public class ConnectUI : NetworkBehaviour
             Debug.Log($"Received seed {seed}");
             _seed = seed;
             mapGenerator.generationSeed = seed;
-            mapGenerator.GenerateMap();
         }
     }
 
@@ -65,7 +84,6 @@ public class ConnectUI : NetworkBehaviour
         else 
         {
             mapGenerator.generationSeed = _seed;
-            mapGenerator.GenerateMap();
         }
         
     }

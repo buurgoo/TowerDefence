@@ -4,10 +4,11 @@ using Unity.Netcode;
 
 public class SpawnUI : NetworkBehaviour
 {
-    [SerializeField] public Button spawnButton;
+    [SerializeField] private Button spawnButton;
     [SerializeField] private EnemyPool enemyPool;
     [SerializeField] private int ownerPlayerId = -1;
     [SerializeField] private UnitType unitType = UnitType.Swordsman;
+    [SerializeField] private GoldUI gold;
 
     public override void OnNetworkSpawn()
     {
@@ -50,7 +51,16 @@ public class SpawnUI : NetworkBehaviour
             Debug.LogError("EnemyPool is null");
             return;
         }
-        spawnUnitRpc(ownerPlayerId, unitType);
+        if (gold == null) { Debug.LogError("Gold is null"); return; }
+
+        if (gold.TrySpend(5))
+        {
+            spawnUnitRpc(ownerPlayerId, unitType);
+        }
+        else
+        {
+            Debug.Log("Not enough gold.");
+        }
     }
 
     [Rpc(SendTo.Everyone)]
