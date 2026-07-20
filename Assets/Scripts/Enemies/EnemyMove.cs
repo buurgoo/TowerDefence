@@ -26,19 +26,24 @@ public class EnemyMove : NetworkBehaviour
 
     private IEnumerator UnitLoop()
     {
-        //RespawnAtOwnerCastle();
+        RespawnAtOwnerCastle();
 
-        //while (!unit.IsDead && targetCastle.getCurrentHP() > 0)
-        //{
-            RespawnAtOwnerCastle();
+        yield return StartCoroutine(MoveToEnemyCastle());
 
-            yield return StartCoroutine(MoveToEnemyCastle());
+        Vector2Int targetCell = mapGenerator.GetCastlePosition(targetPlayerId);
+        TowerTile towerTile = mapGenerator.GetTileDataAt(targetCell) as TowerTile;
+        Tower tower = towerTile.tower;
 
-        //    if (unit.IsDead || targetCastle.getCurrentHP() <= 0) yield break;
-        //    targetCastle.damage(unit.AttackDamage); // enemy castle boom boom
-            unit.Die();
-            yield return null;
-        //}
+        if (Vector3.Distance(transform.position,
+            mapGenerator.GridToWorld(targetCell, heightAboveGround)) <= tower.attackRange)
+        {
+            while (!unit.IsDead)
+            {
+                tower.attack(unit);
+            }
+        }
+
+        yield return null;
     }
 
     private IEnumerator MoveToEnemyCastle()
@@ -50,13 +55,15 @@ public class EnemyMove : NetworkBehaviour
 
         foreach (Vector2Int cell in path)
         {
-            if (mapGenerator.GetTileDataAt(cell).CurrentType == TileType.Tower)
+            foreach (TowerTile towerCell in mapGenerator.towers)
             {
-                TowerTile towerTile = mapGenerator.GetTileDataAt(cell) as TowerTile;
+                Debug.Log("tower check");
+                TowerTile towerTile = towerCell as TowerTile;
                 Tower tower = towerTile.tower;
 
-                if (Vector3.Distance(transform.position, 
-                    mapGenerator.GridToWorld(cell, heightAboveGround)) <= tower.attackRange)
+                if (Vector3.Distance(transform.position,
+                    mapGenerator.GridToWorld(towerCell.GridPosition, heightAboveGround)) <= tower.attackRange &&
+                    towerCell.OwnerPlayerId != ownerPlayerId)
                 {
                     tower.attack(unit);
                 }

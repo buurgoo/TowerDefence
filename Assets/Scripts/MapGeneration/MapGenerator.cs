@@ -14,6 +14,7 @@ public class MapGenerator : MonoBehaviour
     public float tileSize = 1f;
 
     private TileData[,] _mapGrid;
+    public List<TowerTile> towers;
     
     public int playerCount = 2;
     public int neutralBasesCount = 3;
@@ -69,6 +70,7 @@ public class MapGenerator : MonoBehaviour
                 Debug.LogError("Failed to place castle.");
                 continue;
             }
+            buildTower(pos);
             _mapGrid[pos.x, pos.y].CurrentType = TileType.Castle;
             _mapGrid[pos.x, pos.y].OwnerPlayerId = i;
             _criticalNodes.Add(pos);
@@ -106,6 +108,16 @@ public class MapGenerator : MonoBehaviour
         GenerateRoadNetwork();
         ScatterResources();
         InstantiateMapTiles();
+    }
+
+    private void buildTower(Vector2Int pos)
+    {
+        Tower tower = gameObject.AddComponent(typeof(Tower)) as Tower;
+        TileData castleTile = new TowerTile();
+        TowerTile towerTile = castleTile as TowerTile;
+        towerTile.tower = tower;
+        _mapGrid[pos.x, pos.y] = castleTile;
+        towers.Add(towerTile);
     }
 
     private void InstantiateMapTiles()

@@ -32,10 +32,7 @@ public class ConnectUI : NetworkBehaviour
 
     public void StartButtonOnClick()
     {
-        if (IsHost) 
-        {
-            startGameRpc();
-        }
+        startGameRpc();
     }
 
     [Rpc(SendTo.Everyone)]
