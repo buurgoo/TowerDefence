@@ -7,7 +7,7 @@ public class EnemyMove : NetworkBehaviour
 {
     [SerializeField] private MapGenerator mapGenerator;
     [SerializeField] private float heightAboveGround = 0.35f;
-    [SerializeField] private float towerCheckInterval = 0.2f;
+    [SerializeField] private float towerCheckInterval = 0.2f; 
 
     private Unit unit;
     private Castle targetCastle;
@@ -88,7 +88,6 @@ public class EnemyMove : NetworkBehaviour
         StopAttackCheck();
     }
 
-    
     private IEnumerator AttackCheckLoop()
     {
         while (mapGenerator.towers == null)
@@ -104,7 +103,6 @@ public class EnemyMove : NetworkBehaviour
             {
                 TowerTile towerCell = mapGenerator.towers[i];
                 if (towerCell == null || towerCell.tower == null) continue;
-
                 if (towerCell.OwnerPlayerId == ownerPlayerId) continue;
 
                 float distance = Vector3.Distance(transform.position, mapGenerator.GridToWorld(towerCell.GridPosition, heightAboveGround));
@@ -133,8 +131,9 @@ public class EnemyMove : NetworkBehaviour
         transform.position = mapGenerator.GridToWorld(ownerCastleCell, heightAboveGround);
     }
 
-    private void OnDestroy()
+    public override void OnDestroy()
     {
+        base.OnDestroy();
         StopAttackCheck();
     }
 }
