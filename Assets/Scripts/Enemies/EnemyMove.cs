@@ -7,10 +7,13 @@ public class EnemyMove : NetworkBehaviour
 {
     [SerializeField] private MapGenerator mapGenerator;
     [SerializeField] private float heightAboveGround = 0.35f;
+    [SerializeField] private float towerCheckInterval = 0.2f;
+
     private Unit unit;
     private Castle targetCastle;
     private int ownerPlayerId;
     private int targetPlayerId;
+    private Coroutine attackCheckCoroutine;
 
     public void Initialize(MapGenerator generator, int ownerId, int targetId, Castle enemyCastle)
     {
@@ -21,29 +24,33 @@ public class EnemyMove : NetworkBehaviour
 
         unit = GetComponent<Unit>();
 
-        if (IsHost) StartCoroutine(UnitLoop());
+        if (IsHost)
+        {
+            RespawnAtOwnerCastle();
+            StartCoroutine(UnitLoop());
+            attackCheckCoroutine = StartCoroutine(AttackCheckLoop());
+        }
     }
 
     private IEnumerator UnitLoop()
     {
-        RespawnAtOwnerCastle();
-
         yield return StartCoroutine(MoveToEnemyCastle());
 
         Vector2Int targetCell = mapGenerator.GetCastlePosition(targetPlayerId);
-        TowerTile towerTile = mapGenerator.GetTileDataAt(targetCell) as TowerTile;
-        Tower tower = towerTile.tower;
-
-        if (Vector3.Distance(transform.position,
-            mapGenerator.GridToWorld(targetCell, heightAboveGround)) <= tower.attackRange)
+        TileData tileData = mapGenerator.GetTileDataAt(targetCell);
+        
+        if (tileData is TowerTile towerTile && towerTile.tower != null)
         {
+            Tower tower = towerTile.tower;
             while (!unit.IsDead)
             {
-                tower.attack(unit);
+                if (Vector3.Distance(transform.position, mapGenerator.GridToWorld(targetCell, heightAboveGround)) <= tower.attackRange)
+                {
+                    tower.attack(unit);
+                }
+                yield return new WaitForSeconds(tower.attackCooldown > 0 ? tower.attackCooldown : 1f);
             }
         }
-
-        yield return null;
     }
 
     private IEnumerator MoveToEnemyCastle()
@@ -53,28 +60,20 @@ public class EnemyMove : NetworkBehaviour
 
         List<Vector2Int> path = mapGenerator.FindPath(startCell, targetCell, onlyRoad: true);
 
+        if (path == null || path.Count == 0) yield break;
+
         foreach (Vector2Int cell in path)
         {
-            foreach (TowerTile towerCell in mapGenerator.towers)
-            {
-                Debug.Log("tower check");
-                TowerTile towerTile = towerCell as TowerTile;
-                Tower tower = towerTile.tower;
-
-                if (Vector3.Distance(transform.position,
-                    mapGenerator.GridToWorld(towerCell.GridPosition, heightAboveGround)) <= tower.attackRange &&
-                    towerCell.OwnerPlayerId != ownerPlayerId)
-                {
-                    tower.attack(unit);
-                }
-            }
-
             Vector3 destination = mapGenerator.GridToWorld(cell, heightAboveGround);
 
             while (!unit.IsDead)
             {
                 float distanceToCastle = Vector3.Distance(transform.position, targetCastle.transform.position);
-                if (distanceToCastle <= unit.AttackRange) yield break;
+                if (distanceToCastle <= unit.AttackRange) 
+                {
+                    StopAttackCheck();
+                    yield break;
+                }
 
                 transform.position = Vector3.MoveTowards(transform.position, destination, unit.MoveSpeed * Time.deltaTime);
                 if (Vector3.Distance(transform.position, destination) <= 0.01f) break;
@@ -82,8 +81,47 @@ public class EnemyMove : NetworkBehaviour
                 yield return null;
             }
 
-            if (unit.IsDead) yield break;
+            if (unit.IsDead) break;
             transform.position = destination;
+        }
+
+        StopAttackCheck();
+    }
+
+    
+    private IEnumerator AttackCheckLoop()
+    {
+        while (mapGenerator.towers == null)
+        {
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        while (!unit.IsDead)
+        {
+            yield return new WaitForSeconds(towerCheckInterval);
+
+            for (int i = 0; i < mapGenerator.towers.Count; i++)
+            {
+                TowerTile towerCell = mapGenerator.towers[i];
+                if (towerCell == null || towerCell.tower == null) continue;
+
+                if (towerCell.OwnerPlayerId == ownerPlayerId) continue;
+
+                float distance = Vector3.Distance(transform.position, mapGenerator.GridToWorld(towerCell.GridPosition, heightAboveGround));
+                if (distance <= towerCell.tower.attackRange)
+                {
+                    towerCell.tower.attack(unit);
+                }
+            }
+        }
+    }
+
+    private void StopAttackCheck()
+    {
+        if (attackCheckCoroutine != null)
+        {
+            StopCoroutine(attackCheckCoroutine);
+            attackCheckCoroutine = null;
         }
     }
 
@@ -93,5 +131,10 @@ public class EnemyMove : NetworkBehaviour
 
         Vector2Int ownerCastleCell = mapGenerator.GetCastlePosition(ownerPlayerId);
         transform.position = mapGenerator.GridToWorld(ownerCastleCell, heightAboveGround);
+    }
+
+    private void OnDestroy()
+    {
+        StopAttackCheck();
     }
 }

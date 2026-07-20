@@ -14,7 +14,7 @@ public class MapGenerator : MonoBehaviour
     public float tileSize = 1f;
 
     private TileData[,] _mapGrid;
-    public List<TowerTile> towers;
+    public List<TowerTile> towers = new List<TowerTile>();
     
     public int playerCount = 2;
     public int neutralBasesCount = 3;
