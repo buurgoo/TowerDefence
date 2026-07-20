@@ -114,4 +114,9 @@ public class EnemyPool : NetworkBehaviour
             else if (playerId == 1) player1Castle = castle;
         }
     }
+    
+    public void ForceRefreshCastles()
+    {
+        FindPlayerCastles();
+    }
 }

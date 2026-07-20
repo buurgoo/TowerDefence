@@ -30,9 +30,9 @@ public class MapGenerator : MonoBehaviour
     [SerializeField] private GameObject castleModelPrefab;
 
     [Header("Resource Settings (Bigger Forests)")]
-    [SerializeField] private int forestClusterCount = 8; 
-    [SerializeField] private int forestClusterSize = 18;  
-    [SerializeField] private int mineCount = 4;
+    [SerializeField] private int forestClusterCount = 10; 
+    [SerializeField] private int forestClusterSize = 15;  
+    [SerializeField] private int mineCount = 3;
 
     private Vector2Int _castle0Pos = new Vector2Int(-1, -1);
     private Vector2Int _castle1Pos = new Vector2Int(-1, -1);
@@ -132,19 +132,38 @@ public class MapGenerator : MonoBehaviour
     private void GenerateOppositeCastles()
     {
         // Player 0 Castle: Left side boundary zone
-        int p0X = Random.Range(1, 3);
-        int p0Y = Random.Range(2, mapHeight - 2);
-        _castle0Pos = new Vector2Int(p0X, p0Y);
+        //int p0X = Random.Range(1, 3);
+        //int p0Y = Random.Range(2, mapHeight - 2);
+        //_castle0Pos = new Vector2Int(p0X, p0Y);
 
         // Player 1 Castle: Right side boundary zone
-        int p1X = Random.Range(mapWidth - 3, mapWidth - 1);
-        int p1Y = Random.Range(2, mapHeight - 2);
-        _castle1Pos = new Vector2Int(p1X, p1Y);
+        //int p1X = Random.Range(mapWidth - 3, mapWidth - 1);
+        //int p1Y = Random.Range(2, mapHeight - 2);
+        //_castle1Pos = new Vector2Int(p1X, p1Y);
 
         // Process Player 0 Setup
-        SetupCastleTile(_castle0Pos, 0);
+        //SetupCastleTile(_castle0Pos, 0);
 
         // Process Player 1 Setup
+        //SetupCastleTile(_castle1Pos, 1);
+        
+        
+        bool diagonalAxisFlip = Random.value > 0.5f;
+
+        if (diagonalAxisFlip)
+        {
+            // Diagonal Axis A: Top-Left to Bottom-Right
+            _castle0Pos = new Vector2Int(Random.Range(1, 4), Random.Range(mapHeight - 4, mapHeight - 1)); 
+            _castle1Pos = new Vector2Int(Random.Range(mapWidth - 4, mapWidth - 1), Random.Range(1, 4));
+        }
+        else
+        {
+            // Diagonal Axis B: Bottom-Left to Top-Right
+            _castle0Pos = new Vector2Int(Random.Range(1, 4), Random.Range(1, 4));
+            _castle1Pos = new Vector2Int(Random.Range(mapWidth - 4, mapWidth - 1), Random.Range(mapHeight - 4, mapHeight - 1));
+        }
+
+        SetupCastleTile(_castle0Pos, 0);
         SetupCastleTile(_castle1Pos, 1);
     }
 
@@ -426,6 +445,56 @@ public class MapGenerator : MonoBehaviour
             TElement bestItem = elements[bestIndex].Item1;
             elements.RemoveAt(bestIndex);
             return bestItem;
+        }
+    }
+    
+    [Rpc(SendTo.Everyone)]
+    public void RegenerateMapRpc(int newSeed)
+    {
+        Debug.Log($"[Dev Command] Regenerating map with new seed: {newSeed}");
+        
+        generationSeed = newSeed;
+
+        if (NetworkManager.Singleton != null && (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer))
+        {
+            Castle[] activeCastles = FindObjectsByType<Castle>(FindObjectsSortMode.None);
+            foreach (Castle oldCastle in activeCastles)
+            {
+                NetworkObject netObj = oldCastle.GetComponent<NetworkObject>();
+                if (netObj != null && netObj.IsSpawned)
+                {
+                    netObj.Despawn(true);
+                }
+            }
+        }
+
+        Tower[] embeddedComponents = GetComponents<Tower>();
+        foreach (Tower oldTowerComponent in embeddedComponents)
+        {
+            Destroy(oldTowerComponent);
+        }
+        
+        for (int i = transform.childCount - 1; i >= 0; i--)
+        {
+            Transform child = transform.GetChild(i);
+            
+            if (child.GetComponent<Castle>() != null || child.GetComponent<NetworkObject>() != null) 
+                continue;
+
+            Destroy(child.gameObject);
+        }
+
+        towers.Clear();
+        _castle0Pos = new Vector2Int(-1, -1);
+        _castle1Pos = new Vector2Int(-1, -1);
+        _mapGrid = null;
+
+        GenerateMap();
+
+        EnemyPool pool = FindFirstObjectByType<EnemyPool>();
+        if (pool != null)
+        {
+            pool.ForceRefreshCastles();
         }
     }
 }
