@@ -46,13 +46,13 @@ public class MapGenerator : MonoBehaviour
         GenerateForests();
         GenerateMines();
 
-        // 2. Spawn Castles randomly on opposite sides
+        // 2. Spawn Castles randomly on opposite sides and trigger Network Spawn
         GenerateOppositeCastles();
 
         // 3. Connect them with a winding road that navigates around decorations
         GenerateWindingRoad();
 
-        // 4. Instantiation Phase
+        // 4. Instantiation Phase (Build floor layouts and structural components)
         InstantiateMapObjects();
     }
 
@@ -141,16 +141,57 @@ public class MapGenerator : MonoBehaviour
         int p1Y = Random.Range(2, mapHeight - 2);
         _castle1Pos = new Vector2Int(p1X, p1Y);
 
-        _mapGrid[_castle0Pos.x, _castle0Pos.y].CurrentType = TileType.Castle;
-        _mapGrid[_castle0Pos.x, _castle0Pos.y].OwnerPlayerId = 0;
+        // Process Player 0 Setup
+        SetupCastleTile(_castle0Pos, 0);
 
-        _mapGrid[_castle1Pos.x, _castle1Pos.y].CurrentType = TileType.Castle;
-        _mapGrid[_castle1Pos.x, _castle1Pos.y].OwnerPlayerId = 1;
+        // Process Player 1 Setup
+        SetupCastleTile(_castle1Pos, 1);
+    }
+
+    private void SetupCastleTile(Vector2Int pos, int playerId)
+    {
+        buildTower(pos);
+
+        _mapGrid[pos.x, pos.y].CurrentType = TileType.Castle;
+        _mapGrid[pos.x, pos.y].OwnerPlayerId = playerId;
+
+        bool isHostOrServer = NetworkManager.Singleton != null && (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer);
+        if (isHostOrServer && castle != null)
+        {
+            Vector3 worldCoords = GridToWorld(pos, height: 0f);
+            GameObject instance = Instantiate(castle, worldCoords, Quaternion.identity);
+            
+            Castle instanceCastle = instance.GetComponent<Castle>();
+            if (instanceCastle != null)
+            {
+                instanceCastle.setPlayerId(playerId);
+                instanceCastle.setMaxHP(20);
+            }
+            
+            NetworkObject netObj = instance.GetComponent<NetworkObject>();
+            if (netObj != null)
+            {
+                netObj.Spawn();
+            }
+        }
+    }
+
+    private void buildTower(Vector2Int pos)
+    {
+        Tower tower = gameObject.AddComponent(typeof(Tower)) as Tower;
+        TileData castleTile = new TowerTile();
+        TowerTile towerTile = castleTile as TowerTile;
+        towerTile.tower = tower;
+        
+        towerTile.GridPosition = pos;
+        towerTile.CurrentType = TileType.Castle;
+
+        _mapGrid[pos.x, pos.y] = towerTile;
+        towers.Add(towerTile);
     }
 
     private void GenerateWindingRoad()
     {
-        // Internal generation path call using the custom boolean signature
         List<Vector2Int> roadPath = FindPathGeneration(_castle0Pos, _castle1Pos, onlyEmptyOrRoad: true);
 
         if (roadPath == null || roadPath.Count == 0)
@@ -265,9 +306,8 @@ public class MapGenerator : MonoBehaviour
             {
                 if (_mapGrid[neighbor.x, neighbor.y].CurrentType != TileType.Empty) continue;
 
-                if (!addedPositions.Contains(neighbor))
+                if (addedPositions.Add(neighbor))
                 {
-                    addedPositions.Add(neighbor);
                     availablePositions.Add(neighbor);
                 }
             }
@@ -282,45 +322,52 @@ public class MapGenerator : MonoBehaviour
             for (int y = 0; y < mapHeight; y++)
             {
                 TileData tile = _mapGrid[x, y];
-                Vector3 worldPos = GridToWorld(tile.GridPosition, 0);
+                Vector3 worldPos = GridToWorld(tile.GridPosition, 0f);
                 GameObject tileObj = null;
 
-                switch (tile.CurrentType)
+                GameObject prefabToSpawn = GetPrefabForType(tile.CurrentType);
+                if (prefabToSpawn != null)
                 {
-                    case TileType.Empty:
-                        tileObj = Instantiate(emptyTilePrefab, worldPos, Quaternion.identity, transform);
-                        break;
-                    case TileType.Road:
-                        tileObj = Instantiate(roadTilePrefab, worldPos, Quaternion.identity, transform);
-                        break;
-                    case TileType.Forest:
-                        tileObj = Instantiate(forestTilePrefab, worldPos, Quaternion.identity, transform);
-                        break;
-                    case TileType.Mine:
-                        tileObj = Instantiate(mineTilePrefab, worldPos, Quaternion.identity, transform);
-                        break;
-                    case TileType.Castle:
-                        tileObj = Instantiate(castleTilePrefab, worldPos, Quaternion.identity, transform);
-                        if (castleModelPrefab != null)
-                        {
-                            GameObject model = Instantiate(castleModelPrefab, worldPos, Quaternion.identity, tileObj.transform);
-                            Castle castleComponent = model.GetComponent<Castle>();
-                            if (castleComponent != null)
-                            {
-                                castleComponent.setPlayerId(tile.OwnerPlayerId);
-                                castleComponent.setMaxHP(1000);
-                                tile.SpawnedObjectRef = model; 
-                            }
-                        }
-                        break;
+                    tileObj = Instantiate(prefabToSpawn, worldPos, Quaternion.identity, transform);
+                    tileObj.name = $"Tile_{tile.CurrentType}_{x}_{y}";
+                    tile.SpawnedObjectRef = tileObj;
+                }
+
+                if (tile.CurrentType == TileType.Castle)
+                {
+                    if (castleModelPrefab != null && tileObj != null)
+                    {
+                        Vector3 structurePos = GridToWorld(tile.GridPosition, height: 0.2f);
+                        GameObject model = Instantiate(castleModelPrefab, structurePos, Quaternion.identity, tileObj.transform);
+                        model.name = $"Castle_Structure_P{tile.OwnerPlayerId}";
+                    }
                 }
             }
         }
     }
 
-    public Vector3 GridToWorld(Vector2Int gridPos, float height)
+    private GameObject GetPrefabForType(TileType type)
     {
-        return new Vector3(gridPos.x * tileSize, height, gridPos.y * tileSize);
+        switch (type) 
+        {
+            case TileType.Empty: return emptyTilePrefab;
+            case TileType.Road: return roadTilePrefab;
+            case TileType.Forest: return forestTilePrefab;
+            case TileType.Mine: return mineTilePrefab;
+            case TileType.Castle: return castleTilePrefab;
+            default: return emptyTilePrefab;
+        }
+    }
+
+    public Vector3 GridToWorld(Vector2Int gridPos, float height = 0.35f)
+    {
+        float offsetX = (mapWidth * tileSize) / 2f;
+        float offsetZ = (mapHeight * tileSize) / 2f;
+        
+        float worldX = (gridPos.x * tileSize) - offsetX + (tileSize / 2f);
+        float worldZ = (gridPos.y * tileSize) - offsetZ + (tileSize / 2f);
+        
+        return new Vector3(worldX, height, worldZ);
     }
 
     public Vector2Int GetCastlePosition(int playerId)
