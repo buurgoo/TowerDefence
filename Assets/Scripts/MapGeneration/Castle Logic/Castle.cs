@@ -7,10 +7,9 @@ public class Castle : NetworkBehaviour
     [Header("Owner")]
     private int playerId = -1;
 
-
     [Header("Health")]
-    private int maxHp = 10000;
-    private int currentHp = 10000;
+    private int maxHp = 100;
+    private int currentHp = 100;
 
     [SerializeField]
     public GameObject goblin;
@@ -44,11 +43,18 @@ public class Castle : NetworkBehaviour
 
     public void damage(int damage)
     {
+        Debug.Log($"{playerId} castle damaged. Remaining: {currentHp}/{maxHp}");
         currentHp -= damage;
         if (currentHp <= 0)
         {
             currentHp = 0;
+            Lose();
         }
+    }
+
+    public void Lose()
+    {
+        Debug.Log($"Player {playerId} loses :(");
     }
 
     public void heal(int heal)

@@ -48,6 +48,12 @@ public class EnemyMove : NetworkBehaviour
                 {
                     tower.attack(unit);
                 }
+
+                float distanceToCastle = Vector3.Distance(transform.position, targetCastle.transform.position);
+                if (distanceToCastle <= unit.AttackRange)
+                {
+                    targetCastle.damage(unit.AttackDamage);
+                }
                 yield return new WaitForSeconds(tower.attackCooldown > 0 ? tower.attackCooldown : 1f);
             }
         }
@@ -69,7 +75,7 @@ public class EnemyMove : NetworkBehaviour
             while (!unit.IsDead)
             {
                 float distanceToCastle = Vector3.Distance(transform.position, targetCastle.transform.position);
-                if (distanceToCastle <= unit.AttackRange) 
+                if (distanceToCastle <= unit.AttackRange)
                 {
                     StopAttackCheck();
                     yield break;
