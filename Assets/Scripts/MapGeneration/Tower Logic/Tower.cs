@@ -35,7 +35,7 @@ public class Tower : MonoBehaviour
 
     private void tick()
     {
-        Debug.Log($"Cooldown tick. Remaining: {timeRemaining}");
+        //Debug.Log($"Cooldown tick. Remaining: {timeRemaining}");
         timeRemaining -= 0.1f;
         if (timeRemaining >= 0)
         {
