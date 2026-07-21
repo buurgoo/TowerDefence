@@ -510,6 +510,81 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &229607235
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 229607238}
+  - component: {fileID: 229607236}
+  - component: {fileID: 229607237}
+  m_Layer: 0
+  m_Name: TowerPlacementController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &229607236
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 229607235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 3473898562
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  <InScenePlaced>k__BackingField: 0
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 0
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
+--- !u!114 &229607237
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 229607235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30bfc81920024277a7bdd70ec55392d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerPlacementController
+  ShowTopMostFoldoutHeaderGroup: 1
+  mapGenerator: {fileID: 7933355413383087477}
+  goldUI: {fileID: 541250435}
+  towerCost: 15
+--- !u!4 &229607238
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 229607235}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.33018, y: 0, z: 0.06364}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &299232955
 GameObject:
   m_ObjectHideFlags: 0
@@ -2293,6 +2368,10 @@ PrefabInstance:
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 6808437175058216901, guid: 56b5bf2891f8f574d8f53f1a854aa7b3, type: 3}
+      propertyPath: towerPrefab
+      value: 
+      objectReference: {fileID: 7490257118019768077, guid: de1adde63c478094e86fe4646ca12097, type: 3}
+    - target: {fileID: 6808437175058216901, guid: 56b5bf2891f8f574d8f53f1a854aa7b3, type: 3}
       propertyPath: mineTilePrefab
       value: 
       objectReference: {fileID: 8604249756380038062, guid: 9dc5cdbba6914254ca5734563be8e6b6, type: 3}
@@ -2304,6 +2383,10 @@ PrefabInstance:
       propertyPath: emptyTilePrefab
       value: 
       objectReference: {fileID: 1581310768777070123, guid: 795724674320a9340b5a9687fa6fa348, type: 3}
+    - target: {fileID: 6808437175058216901, guid: 56b5bf2891f8f574d8f53f1a854aa7b3, type: 3}
+      propertyPath: towerTilePrefab
+      value: 
+      objectReference: {fileID: 6660338848012842726, guid: 48e6dace0d9123a4bab838a8e03eaf87, type: 3}
     - target: {fileID: 6808437175058216901, guid: 56b5bf2891f8f574d8f53f1a854aa7b3, type: 3}
       propertyPath: castleTilePrefab
       value: 
@@ -2583,3 +2666,4 @@ SceneRoots:
   - {fileID: 1550315257}
   - {fileID: 780122241}
   - {fileID: 1665556320}
+  - {fileID: 229607238}

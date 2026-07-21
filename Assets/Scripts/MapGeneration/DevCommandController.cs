@@ -16,7 +16,7 @@ public class DevCommandController : NetworkBehaviour
         }
     }
 
-    void Update()
+    /*void Update()
     {
         if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsListening) return;
 
@@ -32,5 +32,5 @@ public class DevCommandController : NetworkBehaviour
                 Debug.LogWarning("[Dev Command] Only the host player can trigger map regeneration!");
             }
         }
-    }
+    }*/
 }
