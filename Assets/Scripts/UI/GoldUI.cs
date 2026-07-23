@@ -7,33 +7,83 @@ public class GoldUI : MonoBehaviour
     [Header("References")]
     [SerializeField] private Inventory playerInventory; 
     [SerializeField] private TextMeshProUGUI goldText;
+    [SerializeField] private GameObject goldPanel;
 
-    public void StartTicking()
+    private Coroutine _tickCoroutine;
+
+    private void Awake()
     {
-        Debug.Log($"Gold counter started.");
-        StartCoroutine(GenerateGoldOverTime());
+        // Try to automatically find components if they weren't wired in Inspector
+        if (goldText == null) goldText = GetComponentInChildren<TextMeshProUGUI>();
+        
+        // Hide panel initially
+        SetUIVisibility(false);
+    }
+
+    public void InitializeAndStart()
+    {
+        // Ensure inventory reference is present
+        if (playerInventory == null)
+        {
+            playerInventory = FindFirstObjectByType<Inventory>();
+        }
+
+        SetUIVisibility(true);
+
+        if (playerInventory != null)
+        {
+            UpdateGoldDisplay(playerInventory.Gold);
+        }
+        else
+        {
+            Debug.LogWarning("GoldUI: Player Inventory reference is missing on this client!");
+        }
+
+        if (_tickCoroutine != null)
+        {
+            StopCoroutine(_tickCoroutine);
+        }
+
+        _tickCoroutine = StartCoroutine(GenerateGoldOverTime());
+        Debug.Log("GoldUI initialized successfully for client.");
+    }
+
+    private void SetUIVisibility(bool visible)
+    {
+        if (goldPanel != null)
+        {
+            goldPanel.SetActive(visible);
+        }
+        else if (goldText != null)
+        {
+            goldText.gameObject.SetActive(visible);
+        }
     }
 
     public IEnumerator GenerateGoldOverTime()
     {
         while (true)
         {
-            yield return new WaitForSeconds(playerInventory.goldGenerationInterval);
-            playerInventory.Gold += playerInventory.goldPerTick;
-            UpdateGoldDisplay(playerInventory.Gold);
+            if (playerInventory != null)
+            {
+                yield return new WaitForSeconds(playerInventory.goldGenerationInterval);
+                playerInventory.Gold += playerInventory.goldPerTick;
+                UpdateGoldDisplay(playerInventory.Gold);
+            }
+            else
+            {
+                yield return new WaitForSeconds(1f); // Wait until inventory is found
+            }
         }
     }
 
     public bool TrySpend(int amount)
     {
+        if (playerInventory == null) return false;
+
         bool result = playerInventory.TrySpendGold(amount);
         UpdateGoldDisplay(playerInventory.Gold);
         return result;
-    }
-
-    private void OnGoldChanged(int previousValue, int newValue)
-    {
-        UpdateGoldDisplay(newValue);
     }
 
     private void UpdateGoldDisplay(int currentGold)
@@ -43,12 +93,4 @@ public class GoldUI : MonoBehaviour
             goldText.text = $"Gold: {currentGold}";
         }
     }
-
-    //private void OnDestroy()
-    //{
-    //    if (playerInventory != null)
-    //    {
-    //        playerInventory.Gold.OnValueChanged -= OnGoldChanged;
-    //    }
-    //}
 }

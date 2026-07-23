@@ -4,11 +4,15 @@ using UnityEngine.UI;
 using Unity.Netcode;
 using TMPro;
 
-public class LobbyUI : MonoBehaviour
+public class LobbyUI : NetworkBehaviour
 {
     [Header("UI Panels")]
     [SerializeField] private GameObject menuPanel;   
     [SerializeField] private GameObject lobbyPanel;  
+
+    [Header("Title & Background UI")]
+    [SerializeField] private GameObject gameTitle;      // Drag Title Text / Logo here
+    [SerializeField] private GameObject menuBackground; // Drag Menu Background Image here
 
     [Header("Buttons")]
     [SerializeField] private Button hostButton;
@@ -40,7 +44,6 @@ public class LobbyUI : MonoBehaviour
 
     private void OnEnable()
     {
-        // Safe callback subscription handling
         if (NetworkManager.Singleton != null)
         {
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
@@ -63,7 +66,6 @@ public class LobbyUI : MonoBehaviour
     {
         if (NetworkManager.Singleton.StartHost())
         {
-            // Subscribe here if OnEnable ran before NetworkManager.Singleton was ready
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
@@ -101,19 +103,41 @@ public class LobbyUI : MonoBehaviour
     {
         if (!NetworkManager.Singleton.IsHost && !NetworkManager.Singleton.IsServer) return;
 
-        // Hide UI for all players via RPC or client notification
+        // 1. Hide UI elements across all connected clients simultaneously
         HideLobbyClientRpc();
 
-        // Regenerate map via Network RPC so host AND client generate identical seeds
+        // 2. Generate synchronized procedural map grid
         int randomSeed = Random.Range(1, 99999);
-        mapGenerator.GenerateMap();
+        mapGenerator.RegenerateMapRpc(randomSeed);
     }
+    
+    [Header("In-Game UI References")]
+    [SerializeField] private GoldUI goldUI;
+    
 
     [Rpc(SendTo.Everyone)]
     private void HideLobbyClientRpc()
     {
+        // 1. Hide Lobby UI elements on all screens
         if (lobbyPanel != null) lobbyPanel.SetActive(false);
         if (menuPanel != null) menuPanel.SetActive(false);
+        if (gameTitle != null) gameTitle.SetActive(false);
+        if (menuBackground != null) menuBackground.SetActive(false);
+
+        // 2. Find and initialize Gold UI on all clients
+        if (goldUI == null)
+        {
+            goldUI = FindFirstObjectByType<GoldUI>(FindObjectsInactive.Include);
+        }
+
+        if (goldUI != null)
+        {
+            goldUI.InitializeAndStart();
+        }
+        else
+        {
+            Debug.LogError("LobbyUI: GoldUI script could not be found in scene!");
+        }
     }
 
     #endregion
@@ -122,13 +146,11 @@ public class LobbyUI : MonoBehaviour
 
     private void OnClientConnected(ulong clientId)
     {
-        Debug.Log($"LobbyUI: Client connected with ID {clientId}");
         UpdatePlayerList();
     }
 
     private void OnClientDisconnected(ulong clientId)
     {
-        Debug.Log($"LobbyUI: Client disconnected with ID {clientId}");
         UpdatePlayerList();
     }
 
@@ -158,13 +180,11 @@ public class LobbyUI : MonoBehaviour
         bool isHost = NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer;
         bool hasEnoughPlayers = currentCount >= minPlayersToStart;
 
-        // Show Start Game button for Host when enough players join
         if (startGameButton != null)
         {
             bool showStartButton = isHost && hasEnoughPlayers;
             startGameButton.gameObject.SetActive(showStartButton);
 
-            // Hide the player list text when the Start Game button appears
             if (playerListText != null)
             {
                 playerListText.gameObject.SetActive(!showStartButton);
@@ -189,4 +209,6 @@ public class LobbyUI : MonoBehaviour
     }
 
     #endregion
+    
+    
 }

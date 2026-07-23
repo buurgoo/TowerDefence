@@ -50,12 +50,15 @@ public class TowerPlacementController : NetworkBehaviour
 
     private void HandlePlacementInput()
     {
+        if (mapGenerator == null || Camera.main == null || Pointer.current == null) return;
+
         Ray ray = Camera.main.ScreenPointToRay(Pointer.current.position.ReadValue());
 
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
             Vector2Int gridPos = WorldToGrid(hit.point);
 
+            // Will safely evaluate false now if map isn't generated yet
             if (mapGenerator.IsValidTowerPlacement(gridPos, localPlayerId))
             {
                 if (goldUI != null && goldUI.TrySpend(towerCost))

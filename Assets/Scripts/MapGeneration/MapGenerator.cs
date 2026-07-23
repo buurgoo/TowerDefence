@@ -39,6 +39,29 @@ public class MapGenerator : NetworkBehaviour
     private Vector2Int _castle0Pos = new Vector2Int(-1, -1);
     private Vector2Int _castle1Pos = new Vector2Int(-1, -1);
 
+    /// <summary>
+    /// Network RPC: Broadcasts the random map seed to ALL clients and triggers identical map generation.
+    /// </summary>
+    [Rpc(SendTo.Everyone)]
+    public void RegenerateMapRpc(int seed)
+    {
+        ClearExistingMap();
+        generationSeed = seed;
+        GenerateMap();
+    }
+
+    /// <summary>
+    /// Destroys existing instantiated tile visuals before regenerating.
+    /// </summary>
+    private void ClearExistingMap()
+    {
+        foreach (Transform child in transform)
+        {
+            Destroy(child.gameObject);
+        }
+        towers.Clear();
+    }
+
     public void GenerateMap()
     {
         Random.InitState(generationSeed);
@@ -170,17 +193,21 @@ public class MapGenerator : NetworkBehaviour
 
     public bool IsValidTowerPlacement(Vector2Int pos, int playerId)
     {
+        if (_mapGrid == null) return false;
+
         if (pos.x < 0 || pos.x >= mapWidth || pos.y < 0 || pos.y >= mapHeight) return false;
-        
+    
         TileData tile = _mapGrid[pos.x, pos.y];
-        if (tile.CurrentType != TileType.Empty || tile.IsSocketOccupied) return false;
+        if (tile == null || tile.CurrentType != TileType.Empty || tile.IsSocketOccupied) return false;
 
         Vector2Int castlePos = GetCastlePosition(playerId);
+        if (castlePos == new Vector2Int(-1, -1)) return false;
         if (Mathf.Abs(pos.x - castlePos.x) + Mathf.Abs(pos.y - castlePos.y) > castleTerritoryRange) return false;
 
         foreach (Vector2Int neighbor in GetNeighbors(pos))
         {
-            if (_mapGrid[neighbor.x, neighbor.y].CurrentType == TileType.Road)
+            TileData neighborTile = _mapGrid[neighbor.x, neighbor.y];
+            if (neighborTile != null && neighborTile.CurrentType == TileType.Road)
             {
                 return true;
             }
