@@ -38,10 +38,7 @@ public class MapGenerator : NetworkBehaviour
 
     private Vector2Int _castle0Pos = new Vector2Int(-1, -1);
     private Vector2Int _castle1Pos = new Vector2Int(-1, -1);
-
-    /// <summary>
-    /// Network RPC: Broadcasts the random map seed to ALL clients and triggers identical map generation.
-    /// </summary>
+    
     [Rpc(SendTo.Everyone)]
     public void RegenerateMapRpc(int seed)
     {
@@ -50,9 +47,6 @@ public class MapGenerator : NetworkBehaviour
         GenerateMap();
     }
 
-    /// <summary>
-    /// Destroys existing instantiated tile visuals before regenerating.
-    /// </summary>
     private void ClearExistingMap()
     {
         foreach (Transform child in transform)
