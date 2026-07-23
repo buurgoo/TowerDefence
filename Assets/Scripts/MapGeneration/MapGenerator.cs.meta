@@ -4,7 +4,7 @@ MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - castle: {fileID: 7060205293358873825, guid: f285fb93e3acb1a4aabf1b7e41fa3a14, type: 3}
+  - castle: {instanceID: 0}
   - towerPrefab: {instanceID: 0}
   - emptyTilePrefab: {instanceID: 0}
   - roadTilePrefab: {instanceID: 0}

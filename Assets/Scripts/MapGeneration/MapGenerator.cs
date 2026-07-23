@@ -31,7 +31,7 @@ public class MapGenerator : NetworkBehaviour
     [Header("Structure Prefabs")]
     [SerializeField] private GameObject castleModelPrefab;
 
-    [Header("Resource Settings (Bigger Forests)")]
+[Header("Resource Settings (Bigger Forests)")]
     [SerializeField] private int forestClusterCount = 8; 
     [SerializeField] private int forestClusterSize = 18;  
     [SerializeField] private int mineCount = 4;
@@ -159,20 +159,31 @@ public class MapGenerator : NetworkBehaviour
 
     private void SetupCastleTile(Vector2Int pos, int playerId)
     {
-        buildTower(pos, isCastleNode: true);
-        _mapGrid[pos.x, pos.y].CurrentType = TileType.Castle;
-        _mapGrid[pos.x, pos.y].OwnerPlayerId = playerId;
-
         bool isHostOrServer = NetworkManager.Singleton != null && (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer);
     
         if (isHostOrServer && castle != null)
         {
             Vector3 worldCoords = GridToWorld(pos, height: 0.1f);
             GameObject instance = Instantiate(castle, worldCoords, Quaternion.identity);
-        
+
+            Tower tower = gameObject.AddComponent(typeof(Tower)) as Tower;
+            TowerTile towerTile = new TowerTile
+            {
+                GridPosition = pos,
+                CurrentType = TileType.Castle,
+                OwnerPlayerId = playerId,
+                IsSocketOccupied = true,
+                SpawnedObjectRef = instance,
+                tower = tower,
+            };
+            _mapGrid[pos.x, pos.y] = towerTile;
+            towers.Add(towerTile);
+
             Castle instanceCastle = instance.GetComponent<Castle>();
             if (instanceCastle != null)
             {
+                //TowerTile tile = _mapGrid[pos.x, pos.y] as TowerTile;
+                //tile.towerObject = instance;
                 instanceCastle.setPlayerId(playerId);
                 instanceCastle.setMaxHP(20);
             }
@@ -186,19 +197,12 @@ public class MapGenerator : NetworkBehaviour
             {
                 Debug.LogError("Castle prefab is missing a NetworkObject component!");
             }
+
+            Color playerColor;
+            if (playerId == 0) { playerColor = new Color(1f, 0f, 0f); }
+            else { playerColor = new Color(0f, 0f, 1f); }
+            SetColor(playerColor, pos);
         }
-    }
-
-    private void buildTower(Vector2Int pos, bool isCastleNode)
-    {
-        Tower tower = gameObject.AddComponent(typeof(Tower)) as Tower;
-        TowerTile towerTile = new TowerTile();
-        towerTile.tower = tower;
-        towerTile.GridPosition = pos;
-        towerTile.CurrentType = isCastleNode ? TileType.Castle : TileType.Tower;
-
-        _mapGrid[pos.x, pos.y] = towerTile;
-        towers.Add(towerTile);
     }
 
     public bool IsValidTowerPlacement(Vector2Int pos, int playerId)
@@ -267,6 +271,11 @@ public class MapGenerator : NetworkBehaviour
             _mapGrid[pos.x, pos.y] = towerTile;
             towers.Add(towerTile);
 
+            Color playerColor;
+            if (playerId == 0) { playerColor = new Color(1f, 0f, 0f); }
+            else { playerColor = new Color(0f, 0f, 1f); }
+
+            SetColor(playerColor, pos);
             NotifyTowerBuiltClientRpc(pos, playerId, netObj.NetworkObjectId);
         }
     }
@@ -303,6 +312,35 @@ public class MapGenerator : NetworkBehaviour
 
         _mapGrid[pos.x, pos.y] = towerTile;
         towers.Add(towerTile);
+
+        Color playerColor;
+        if (playerId == 0) { playerColor = new Color(1f, 0f, 0f); }
+        else { playerColor = new Color(0f, 0f, 1f); }
+
+        SetColor(playerColor, pos);
+    }
+
+    private void SetColor(Color color, Vector2Int pos)
+    {
+        TowerTile tile = _mapGrid[pos.x, pos.y] as TowerTile;
+        if (tile == null) { Debug.Log($"Tower Tile not found"); }
+        bool isCastle = (tile.CurrentType == TileType.Tower) ? false : true;
+
+        GameObject obj = tile.SpawnedObjectRef;
+        if (obj == null) { Debug.Log($"Tower Object not found"); }
+        if (!isCastle)
+        {
+            Renderer objectRenderer = obj.GetComponent<Renderer>();
+            objectRenderer.material.SetColor("_BaseColor", color);
+        }
+        else
+        {
+            Renderer[] objectRenderers = obj.GetComponentsInChildren<Renderer>();
+            for (int i = 0; i < objectRenderers.Length; i++)
+            {
+                objectRenderers[i].material.SetColor("_BaseColor", color);
+            }
+        }
     }
 
     private void GenerateWindingRoad()
