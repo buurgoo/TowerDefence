@@ -5,6 +5,13 @@ MonoImporter:
   serializedVersion: 2
   defaultReferences:
   - castle: {fileID: 7060205293358873825, guid: f285fb93e3acb1a4aabf1b7e41fa3a14, type: 3}
+  - towerPrefab: {instanceID: 0}
+  - emptyTilePrefab: {instanceID: 0}
+  - roadTilePrefab: {instanceID: 0}
+  - forestTilePrefab: {instanceID: 0}
+  - mineTilePrefab: {instanceID: 0}
+  - castleTilePrefab: {instanceID: 0}
+  - castleModelPrefab: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

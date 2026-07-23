@@ -50,6 +50,7 @@ public class TowerPlacementController : NetworkBehaviour
 
     private void HandlePlacementInput()
     {
+        Debug.Log($"Tower place attempt by player {localPlayerId}");
         if (mapGenerator == null || Camera.main == null || Pointer.current == null) return;
 
         Ray ray = Camera.main.ScreenPointToRay(Pointer.current.position.ReadValue());

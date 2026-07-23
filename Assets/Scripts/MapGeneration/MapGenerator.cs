@@ -212,7 +212,7 @@ public class MapGenerator : NetworkBehaviour
 
         Vector2Int castlePos = GetCastlePosition(playerId);
         if (castlePos == new Vector2Int(-1, -1)) return false;
-        if (Mathf.Abs(pos.x - castlePos.x) + Mathf.Abs(pos.y - castlePos.y) > castleTerritoryRange) return false;
+        //if (Mathf.Abs(pos.x - castlePos.x) + Mathf.Abs(pos.y - castlePos.y) > castleTerritoryRange) return false;
 
         foreach (Vector2Int neighbor in GetNeighbors(pos))
         {

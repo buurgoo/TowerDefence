@@ -1764,6 +1764,7 @@ MonoBehaviour:
   mapGenerator: {fileID: 7933355413383087477}
   minPlayersToStart: 2
   goldUI: {fileID: 541250435}
+  spawnUI: {fileID: 0}
 --- !u!114 &1221314425
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2058,8 +2059,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Tower Siege
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 65c5055fad5fa8a4da4a57a2568f3c1e, type: 2}
-  m_sharedMaterial: {fileID: 2791308614303154176, guid: 65c5055fad5fa8a4da4a57a2568f3c1e, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2746,6 +2747,7 @@ MonoBehaviour:
   ownerPlayerId: 0
   unitType: 1
   gold: {fileID: 541250435}
+  spawnUIPanel: {fileID: 0}
 --- !u!114 &2038010037
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3038,7 +3040,7 @@ PrefabInstance:
     - target: {fileID: 6808437175058216901, guid: 56b5bf2891f8f574d8f53f1a854aa7b3, type: 3}
       propertyPath: towerPrefab
       value: 
-      objectReference: {fileID: 7490257118019768077, guid: 42c16244bc440ac42a59bf53ba9b072f, type: 3}
+      objectReference: {fileID: 8972486108427015752, guid: 48c6847cf5e5842f7be6cc7264670b5e, type: 3}
     - target: {fileID: 6808437175058216901, guid: 56b5bf2891f8f574d8f53f1a854aa7b3, type: 3}
       propertyPath: generationSeed
       value: 7797

@@ -910,6 +910,7 @@ GameObject:
   - component: {fileID: 6633800047376946659}
   - component: {fileID: -4687480349820648039}
   - component: {fileID: -6571578501739074591}
+  - component: {fileID: -8351089966186060051}
   m_Layer: 0
   m_Name: CastleModel
   m_TagString: Untagged
@@ -1031,7 +1032,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3161511401
+  GlobalObjectIdHash: 3190670749
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -1060,6 +1061,20 @@ MonoBehaviour:
   attackRange: 5
   attackDamage: 75
   attackCooldown: 1
+--- !u!114 &-8351089966186060051
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7490257118019768077}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7ed3e7d051ab8848a137a60ff7d0836, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Castle
+  ShowTopMostFoldoutHeaderGroup: 1
+  goblin: {fileID: 0}
 --- !u!1 &7879212592945747385
 GameObject:
   m_ObjectHideFlags: 0

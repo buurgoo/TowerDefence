@@ -8,8 +8,8 @@ public class Castle : NetworkBehaviour
     private int playerId = -1;
 
     [Header("Health")]
-    private int maxHp = 100;
-    private int currentHp = 100;
+    private int maxHp = 0;
+    private int currentHp = 0;
 
     [SerializeField]
     public GameObject goblin;
@@ -76,9 +76,9 @@ public class Castle : NetworkBehaviour
     {
         Debug.Log($"Spawning unit for player {playerId}.");
         var instance = Instantiate(spawnableEnemies[enemy], this.transform);
-        // var instanceEnemy = instance.GetComponent<EnemyMove>();
-        // int enemyPlayer = (playerId == 1) ? 0 : 1;
-        // instanceEnemy.SetTarget(enemyPlayer);
+        //var instanceEnemy = instance.GetComponent<EnemyMove>();
+        //int enemyPlayer = (playerId == 1) ? 0 : 1;
+        //instanceEnemy.SetTarget(enemyPlayer);
         instance.GetComponent<NetworkObject>().Spawn();
     }
 }
