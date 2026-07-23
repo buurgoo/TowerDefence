@@ -13,16 +13,13 @@ public class GoldUI : MonoBehaviour
 
     private void Awake()
     {
-        // Try to automatically find components if they weren't wired in Inspector
         if (goldText == null) goldText = GetComponentInChildren<TextMeshProUGUI>();
         
-        // Hide panel initially
         SetUIVisibility(false);
     }
 
     public void InitializeAndStart()
     {
-        // Ensure inventory reference is present
         if (playerInventory == null)
         {
             playerInventory = FindFirstObjectByType<Inventory>();
@@ -72,7 +69,7 @@ public class GoldUI : MonoBehaviour
             }
             else
             {
-                yield return new WaitForSeconds(1f); // Wait until inventory is found
+                yield return new WaitForSeconds(1f);
             }
         }
     }

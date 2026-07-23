@@ -9,65 +9,96 @@ public class SpawnUI : NetworkBehaviour
     [SerializeField] private int ownerPlayerId = -1;
     [SerializeField] private UnitType unitType = UnitType.Swordsman;
     [SerializeField] private GoldUI gold;
+    [SerializeField] private GameObject spawnUIPanel;
+    
+    private void Awake()
+    {
+        SetUIVisibility(false);
+    }
 
     public override void OnNetworkSpawn()
     {
-        setPlayerIdRpc();
+        SetPlayerIdRpc();
     }
 
     void Start()
     {
-        if (enemyPool == null) enemyPool = GetComponent<EnemyPool>();
+        if (enemyPool == null) enemyPool = FindFirstObjectByType<EnemyPool>();
 
         if (spawnButton == null)
         {
-            Debug.LogError("Spawn Button is not assigned");
-            return;
+            spawnButton = GetComponentInChildren<Button>();
         }
 
-        if (enemyPool == null)
+        if (spawnButton != null)
         {
-            Debug.LogError("EnemyPool component was not found on GameManager");
-            return;
+            spawnButton.onClick.RemoveListener(SpawnButtonOnClick);
+            spawnButton.onClick.AddListener(SpawnButtonOnClick);
         }
-        spawnButton.onClick.AddListener(SpawnButtonOnClick);
+    }
+    
+    public void InitializeAndStart()
+    {
+        if (enemyPool == null) enemyPool = FindFirstObjectByType<EnemyPool>();
+        if (gold == null) gold = FindFirstObjectByType<GoldUI>();
+
+        SetUIVisibility(true);
+        Debug.Log($"SpawnUI initialized for Player {ownerPlayerId}.");
+    }
+
+    private void SetUIVisibility(bool visible)
+    {
+        if (spawnUIPanel != null)
+        {
+            spawnUIPanel.SetActive(visible);
+        }
+        else if (spawnButton != null)
+        {
+            spawnButton.gameObject.SetActive(visible);
+        }
     }
 
     [Rpc(SendTo.Me)]
-    public void setPlayerIdRpc()
+    public void SetPlayerIdRpc()
     {
-        if (IsHost) { ownerPlayerId = 0; }
-        else { ownerPlayerId = 1; }
+        ownerPlayerId = IsHost ? 0 : 1;
     }
 
     public void SpawnButtonOnClick()
     {
         Debug.Log($"Spawn button clicked by player {ownerPlayerId}.");
 
-        if (enemyPool == null) enemyPool = GetComponent<EnemyPool>();
+        if (enemyPool == null) enemyPool = FindFirstObjectByType<EnemyPool>();
+        if (gold == null) gold = FindFirstObjectByType<GoldUI>();
 
         if (enemyPool == null)
         {
-            Debug.LogError("EnemyPool is null");
+            Debug.LogError("SpawnUI: EnemyPool is null!");
             return;
         }
-        if (gold == null) { Debug.LogError("Gold is null"); return; }
+
+        if (gold == null)
+        {
+            Debug.LogError("SpawnUI: GoldUI is null!");
+            return;
+        }
 
         if (gold.TrySpend(5))
         {
-            spawnUnitRpc(ownerPlayerId, unitType);
+            SpawnUnitRpc(ownerPlayerId, unitType);
         }
         else
         {
-            Debug.Log("Not enough gold.");
+            Debug.Log("Not enough gold to spawn unit!");
         }
     }
 
     [Rpc(SendTo.Everyone)]
-    public void spawnUnitRpc(int ownerPlayerId, UnitType unitType)
+    public void SpawnUnitRpc(int playerOwnerId, UnitType unit)
     {
-        if (IsHost) { 
-            enemyPool.SpawnUnit(ownerPlayerId, unitType); 
+        if (IsHost && enemyPool != null)
+        { 
+            enemyPool.SpawnUnit(playerOwnerId, unit); 
         }
     }
 }

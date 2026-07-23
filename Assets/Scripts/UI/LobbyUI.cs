@@ -11,8 +11,8 @@ public class LobbyUI : NetworkBehaviour
     [SerializeField] private GameObject lobbyPanel;  
 
     [Header("Title & Background UI")]
-    [SerializeField] private GameObject gameTitle;      // Drag Title Text / Logo here
-    [SerializeField] private GameObject menuBackground; // Drag Menu Background Image here
+    [SerializeField] private GameObject gameTitle;
+    [SerializeField] private GameObject menuBackground;
 
     [Header("Buttons")]
     [SerializeField] private Button hostButton;
@@ -103,41 +103,29 @@ public class LobbyUI : NetworkBehaviour
     {
         if (!NetworkManager.Singleton.IsHost && !NetworkManager.Singleton.IsServer) return;
 
-        // 1. Hide UI elements across all connected clients simultaneously
         HideLobbyClientRpc();
 
-        // 2. Generate synchronized procedural map grid
         int randomSeed = Random.Range(1, 99999);
         mapGenerator.RegenerateMapRpc(randomSeed);
     }
     
     [Header("In-Game UI References")]
     [SerializeField] private GoldUI goldUI;
-    
+    [SerializeField] private SpawnUI spawnUI;
 
     [Rpc(SendTo.Everyone)]
     private void HideLobbyClientRpc()
     {
-        // 1. Hide Lobby UI elements on all screens
         if (lobbyPanel != null) lobbyPanel.SetActive(false);
         if (menuPanel != null) menuPanel.SetActive(false);
         if (gameTitle != null) gameTitle.SetActive(false);
         if (menuBackground != null) menuBackground.SetActive(false);
 
-        // 2. Find and initialize Gold UI on all clients
-        if (goldUI == null)
-        {
-            goldUI = FindFirstObjectByType<GoldUI>(FindObjectsInactive.Include);
-        }
+        if (goldUI == null) goldUI = FindFirstObjectByType<GoldUI>(FindObjectsInactive.Include);
+        if (goldUI != null) goldUI.InitializeAndStart();
 
-        if (goldUI != null)
-        {
-            goldUI.InitializeAndStart();
-        }
-        else
-        {
-            Debug.LogError("LobbyUI: GoldUI script could not be found in scene!");
-        }
+        if (spawnUI == null) spawnUI = FindFirstObjectByType<SpawnUI>(FindObjectsInactive.Include);
+        if (spawnUI != null) spawnUI.InitializeAndStart();
     }
 
     #endregion

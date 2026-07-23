@@ -164,18 +164,28 @@ public class MapGenerator : NetworkBehaviour
         _mapGrid[pos.x, pos.y].OwnerPlayerId = playerId;
 
         bool isHostOrServer = NetworkManager.Singleton != null && (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer);
+    
         if (isHostOrServer && castle != null)
         {
-            Vector3 worldCoords = GridToWorld(pos, height: 0f);
+            Vector3 worldCoords = GridToWorld(pos, height: 0.1f);
             GameObject instance = Instantiate(castle, worldCoords, Quaternion.identity);
+        
             Castle instanceCastle = instance.GetComponent<Castle>();
             if (instanceCastle != null)
             {
                 instanceCastle.setPlayerId(playerId);
                 instanceCastle.setMaxHP(20);
             }
+        
             NetworkObject netObj = instance.GetComponent<NetworkObject>();
-            if (netObj != null) netObj.Spawn();
+            if (netObj != null)
+            {
+                netObj.Spawn();
+            }
+            else
+            {
+                Debug.LogError("Castle prefab is missing a NetworkObject component!");
+            }
         }
     }
 
@@ -398,12 +408,12 @@ public class MapGenerator : NetworkBehaviour
                     tile.SpawnedObjectRef = tileObj;
                 }
 
-                if (tile.CurrentType == TileType.Castle && castleModelPrefab != null && tileObj != null)
+                /*if (tile.CurrentType == TileType.Castle && castleModelPrefab != null && tileObj != null)
                 {
                     Vector3 structurePos = GridToWorld(tile.GridPosition, height: 0.2f);
                     GameObject model = Instantiate(castleModelPrefab, structurePos, Quaternion.identity, tileObj.transform);
                     model.name = $"Castle_Structure_P{tile.OwnerPlayerId}";
-                }
+                }*/
             }
         }
     }
