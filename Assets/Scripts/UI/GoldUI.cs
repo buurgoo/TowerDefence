@@ -8,6 +8,7 @@ public class GoldUI : MonoBehaviour
     [SerializeField] private Inventory playerInventory; 
     [SerializeField] private TextMeshProUGUI goldText;
     [SerializeField] private GameObject goldPanel;
+    [SerializeField] private GameObject goldIcon;
 
     private Coroutine _tickCoroutine;
 
@@ -15,6 +16,7 @@ public class GoldUI : MonoBehaviour
     {
         if (goldText == null) goldText = GetComponentInChildren<TextMeshProUGUI>();
         
+        // Hide UI elements initially while in lobby
         SetUIVisibility(false);
     }
 
@@ -47,11 +49,19 @@ public class GoldUI : MonoBehaviour
 
     private void SetUIVisibility(bool visible)
     {
+        // Toggle parent panel if assigned
         if (goldPanel != null)
         {
             goldPanel.SetActive(visible);
         }
-        else if (goldText != null)
+
+        // Toggle icon and text elements independently
+        if (goldIcon != null)
+        {
+            goldIcon.SetActive(visible);
+        }
+
+        if (goldText != null)
         {
             goldText.gameObject.SetActive(visible);
         }
@@ -87,7 +97,7 @@ public class GoldUI : MonoBehaviour
     {
         if (goldText != null)
         {
-            goldText.text = $"Gold: {currentGold}";
+            goldText.text = $"{currentGold}";
         }
     }
 }

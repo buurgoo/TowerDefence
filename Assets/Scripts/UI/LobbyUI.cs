@@ -123,6 +123,7 @@ public class LobbyUI : NetworkBehaviour
 
         if (goldUI == null) goldUI = FindFirstObjectByType<GoldUI>(FindObjectsInactive.Include);
         if (goldUI != null) goldUI.InitializeAndStart();
+        
 
         if (spawnUI == null) spawnUI = FindFirstObjectByType<SpawnUI>(FindObjectsInactive.Include);
         if (spawnUI != null) spawnUI.InitializeAndStart();
