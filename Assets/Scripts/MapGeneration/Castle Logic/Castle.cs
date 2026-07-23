@@ -5,45 +5,38 @@ using Unity.Netcode;
 public class Castle : NetworkBehaviour
 {
     [Header("Owner")]
-    private int playerId = -1;
+    private NetworkVariable<int> networkPlayerId = new NetworkVariable<int>(-1);
 
     [Header("Health")]
     private int maxHp = 0;
     private int currentHp = 0;
 
-    //[SerializeField]
-    //public GameObject goblin;
-    //private Dictionary<string, GameObject> spawnableEnemies = new Dictionary<string, GameObject>();
-
     public void setPlayerId(int id)
     {
-        if (playerId == -1) { playerId = id; }
+        if (IsServer || IsHost)
+        {
+            networkPlayerId.Value = id;
+        }
     }
 
     public int getPlayerId()
     {
-        return playerId;
+        return networkPlayerId.Value;
     }
 
     public void setMaxHP(int hp)
     {
-        //spawnableEnemies.Add("goblin", goblin);
         if (maxHp == 0) { maxHp = hp; currentHp = hp; }
     }
 
-    public int getMaxHP()
-    {
-        return maxHp;
-    }
-
-    public int getCurrentHP()
-    {
-        return currentHp;
-    }
+    public int getMaxHP() => maxHp;
+    public int getCurrentHP() => currentHp;
 
     public void damage(int damage)
     {
-        Debug.Log($"{playerId} castle damaged. Remaining: {currentHp}/{maxHp}");
+        if (!IsServer && !IsHost) return;
+        
+        Debug.Log($"Player {networkPlayerId.Value} castle damaged. Remaining: {currentHp}/{maxHp}");
         currentHp -= damage;
         if (currentHp <= 0)
         {
@@ -54,7 +47,20 @@ public class Castle : NetworkBehaviour
 
     public void Lose()
     {
-        Debug.Log($"Player {playerId} loses :(");
+        int losingPlayerId = networkPlayerId.Value;
+        int winningPlayerId = (losingPlayerId == 0) ? 1 : 0;
+
+        Debug.Log($"Player {losingPlayerId}'s castle destroyed! Player {winningPlayerId} Wins!");
+
+        EndGameUI endGameUI = FindFirstObjectByType<EndGameUI>();
+        if (endGameUI != null)
+        {
+            endGameUI.ShowWinScreenRpc(winningPlayerId);
+        }
+        else
+        {
+            Debug.LogError("Castle: EndGameUI not found in scene!");
+        }
     }
 
     public void heal(int heal)
@@ -70,15 +76,4 @@ public class Castle : NetworkBehaviour
     {
         currentHp = maxHp;
     }
-
-    //[Rpc(SendTo.Me)]
-    //public void SpawnRpc(string enemy)
-    //{
-    //    Debug.Log($"Spawning unit for player {playerId}.");
-    //    var instance = Instantiate(spawnableEnemies[enemy], this.transform);
-    //    //var instanceEnemy = instance.GetComponent<EnemyMove>();
-    //    //int enemyPlayer = (playerId == 1) ? 0 : 1;
-    //    //instanceEnemy.SetTarget(enemyPlayer);
-    //    instance.GetComponent<NetworkObject>().Spawn();
-    //}
 }
