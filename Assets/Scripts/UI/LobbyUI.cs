@@ -104,8 +104,8 @@ public class LobbyUI : NetworkBehaviour
         if (!NetworkManager.Singleton.IsHost && !NetworkManager.Singleton.IsServer) return;
 
         HideLobbyClientRpc();
-
         int randomSeed = Random.Range(1, 99999);
+        Debug.Log($"Seed: {randomSeed}");
         mapGenerator.RegenerateMapRpc(randomSeed);
     }
     

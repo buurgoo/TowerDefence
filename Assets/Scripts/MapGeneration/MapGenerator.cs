@@ -42,6 +42,7 @@ public class MapGenerator : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     public void RegenerateMapRpc(int seed)
     {
+        Debug.Log($"Generating map with seed: {seed}");
         ClearExistingMap();
         generationSeed = seed;
         GenerateMap();
@@ -61,7 +62,8 @@ public class MapGenerator : NetworkBehaviour
         Random.InitState(generationSeed);
         InitializeGrid();
         GenerateForests();
-        GenerateMines();
+        //GenerateMines();
+        //Debug.Log($"Random int after GenerateMines: {Random.Range(0, 1000)}");
         GenerateDiagonalCastles();
         GenerateWindingRoad();
         InstantiateMapObjects();
@@ -480,7 +482,7 @@ public class MapGenerator : NetworkBehaviour
         {
             int bestIndex = 0;
             for (int i = 1; i < elements.Count; i++)
-                if (elements[i].Item2.CompareTo(elements[bestIndex].Item2) < 0) bestIndex = i;
+                if (elements[i].Item2.CompareTo(elements[bestIndex].Item2) < 0) bestIndex = System.Math.Min(i, bestIndex);
             TElement bestItem = elements[bestIndex].Item1;
             elements.RemoveAt(bestIndex);
             return bestItem;
