@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Unity.Netcode;
 
-public class SpawnUI : NetworkBehaviour
+public class SpawnUI : MonoBehaviour
 {
     [SerializeField] private Button spawnButton;
     [SerializeField] private EnemyPool enemyPool;
@@ -10,25 +10,15 @@ public class SpawnUI : NetworkBehaviour
     [SerializeField] private UnitType unitType = UnitType.Swordsman;
     [SerializeField] private GoldUI gold;
     [SerializeField] private GameObject spawnUIPanel;
-    
+
     private void Awake()
     {
         SetUIVisibility(false);
     }
 
-    public override void OnNetworkSpawn()
+    private void Start()
     {
-        SetPlayerIdRpc();
-    }
-
-    void Start()
-    {
-        if (enemyPool == null) enemyPool = FindFirstObjectByType<EnemyPool>();
-
-        if (spawnButton == null)
-        {
-            spawnButton = GetComponentInChildren<Button>();
-        }
+        if (spawnButton == null) spawnButton = GetComponentInChildren<Button>();
 
         if (spawnButton != null)
         {
@@ -36,11 +26,16 @@ public class SpawnUI : NetworkBehaviour
             spawnButton.onClick.AddListener(SpawnButtonOnClick);
         }
     }
-    
+
     public void InitializeAndStart()
     {
         if (enemyPool == null) enemyPool = FindFirstObjectByType<EnemyPool>();
         if (gold == null) gold = FindFirstObjectByType<GoldUI>();
+
+        if (NetworkManager.Singleton != null)
+        {
+            ownerPlayerId = NetworkManager.Singleton.IsHost ? 0 : 1;
+        }
 
         SetUIVisibility(true);
         Debug.Log($"SpawnUI initialized for Player {ownerPlayerId}.");
@@ -48,6 +43,8 @@ public class SpawnUI : NetworkBehaviour
 
     private void SetUIVisibility(bool visible)
     {
+        if (visible) gameObject.SetActive(true);
+
         if (spawnUIPanel != null)
         {
             spawnUIPanel.SetActive(visible);
@@ -58,14 +55,18 @@ public class SpawnUI : NetworkBehaviour
         }
     }
 
-    [Rpc(SendTo.Me)]
-    public void SetPlayerIdRpc()
+    public void ResetAndHide()
     {
-        ownerPlayerId = IsHost ? 0 : 1;
+        SetUIVisibility(false);
     }
 
     public void SpawnButtonOnClick()
     {
+        if (ownerPlayerId == -1 && NetworkManager.Singleton != null)
+        {
+            ownerPlayerId = NetworkManager.Singleton.IsHost ? 0 : 1;
+        }
+
         Debug.Log($"Spawn button clicked by player {ownerPlayerId}.");
 
         if (enemyPool == null) enemyPool = FindFirstObjectByType<EnemyPool>();
@@ -85,20 +86,11 @@ public class SpawnUI : NetworkBehaviour
 
         if (gold.TrySpend(5))
         {
-            SpawnUnitRpc(ownerPlayerId, unitType);
+            enemyPool.RequestSpawnUnitServerRpc(ownerPlayerId, unitType);
         }
         else
         {
             Debug.Log("Not enough gold to spawn unit!");
-        }
-    }
-
-    [Rpc(SendTo.Everyone)]
-    public void SpawnUnitRpc(int playerOwnerId, UnitType unit)
-    {
-        if (IsHost && enemyPool != null)
-        { 
-            enemyPool.SpawnUnit(playerOwnerId, unit); 
         }
     }
 }

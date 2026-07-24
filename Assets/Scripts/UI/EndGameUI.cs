@@ -13,6 +13,12 @@ public class EndGameUI : NetworkBehaviour
     [Header("UI References To Reset")]
     [SerializeField] private GameObject menuPanel;
     [SerializeField] private GameObject lobbyPanel;
+    [SerializeField] private GameObject gameTitle;      
+    [SerializeField] private GameObject menuBackground; 
+
+    [Header("In-Game UIs To Clear")]
+    [SerializeField] private GoldUI goldUI;
+    [SerializeField] private SpawnUI spawnUI;
 
     private void Awake()
     {
@@ -34,7 +40,7 @@ public class EndGameUI : NetworkBehaviour
 
         if (winText != null)
         {
-            winText.text = $"Player {winningPlayerId} Won!";
+            winText.text = $"The end.";
         }
     }
 
@@ -47,8 +53,16 @@ public class EndGameUI : NetworkBehaviour
             NetworkManager.Singleton.Shutdown();
         }
 
+        if (goldUI == null) goldUI = FindFirstObjectByType<GoldUI>(FindObjectsInactive.Include);
+        if (goldUI != null) goldUI.ResetAndHide();
+
+        if (spawnUI == null) spawnUI = FindFirstObjectByType<SpawnUI>(FindObjectsInactive.Include);
+        if (spawnUI != null) spawnUI.ResetAndHide();
+
         if (lobbyPanel != null) lobbyPanel.SetActive(false);
         if (menuPanel != null) menuPanel.SetActive(true);
+        if (gameTitle != null) gameTitle.SetActive(true);
+        if (menuBackground != null) menuBackground.SetActive(true);
 
         MapGenerator mapGen = FindFirstObjectByType<MapGenerator>();
         if (mapGen != null)

@@ -16,18 +16,17 @@ public class GoldUI : MonoBehaviour
     {
         if (goldText == null) goldText = GetComponentInChildren<TextMeshProUGUI>();
         
-        // Hide UI elements initially while in lobby
         SetUIVisibility(false);
     }
 
     public void InitializeAndStart()
     {
+        SetUIVisibility(true);
+
         if (playerInventory == null)
         {
             playerInventory = FindFirstObjectByType<Inventory>();
         }
-
-        SetUIVisibility(true);
 
         if (playerInventory != null)
         {
@@ -49,13 +48,16 @@ public class GoldUI : MonoBehaviour
 
     private void SetUIVisibility(bool visible)
     {
-        // Toggle parent panel if assigned
+        if (visible)
+        {
+            gameObject.SetActive(true);
+        }
+
         if (goldPanel != null)
         {
             goldPanel.SetActive(visible);
         }
 
-        // Toggle icon and text elements independently
         if (goldIcon != null)
         {
             goldIcon.SetActive(visible);
@@ -65,6 +67,27 @@ public class GoldUI : MonoBehaviour
         {
             goldText.gameObject.SetActive(visible);
         }
+
+        if (!visible && goldPanel == null)
+        {
+            gameObject.SetActive(false);
+        }
+    }
+
+    public void ResetAndHide()
+    {
+        if (_tickCoroutine != null)
+        {
+            StopCoroutine(_tickCoroutine);
+            _tickCoroutine = null;
+        }
+
+        if (playerInventory != null)
+        {
+            playerInventory.Gold = 0;
+        }
+
+        SetUIVisibility(false);
     }
 
     public IEnumerator GenerateGoldOverTime()

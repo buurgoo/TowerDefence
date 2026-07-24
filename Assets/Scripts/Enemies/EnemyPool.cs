@@ -25,6 +25,17 @@ public class EnemyPool : NetworkBehaviour
         CreatePool(swordsmanPrefab);
     }
 
+    /// <summary>
+    /// Explicitly registers spawned castles from MapGenerator.
+    /// </summary>
+    public void RegisterCastle(Castle castle, int playerId)
+    {
+        if (playerId == 0) player0Castle = castle;
+        else if (playerId == 1) player1Castle = castle;
+        
+        Debug.Log($"EnemyPool: Successfully registered Castle for Player {playerId}");
+    }
+
     private void CreatePool(GameObject prefab)
     {
         for (int i = 0; i < poolSize; i++)
@@ -36,14 +47,18 @@ public class EnemyPool : NetworkBehaviour
         }
     }
 
-    public Unit SpawnUnit(int ownerPlayerId, UnitType unitType)
+   public Unit SpawnUnit(int ownerPlayerId, UnitType unitType)
     {
         if (!IsHost) return null;
 
-        FindPlayerCastles();
         if (player0Castle == null || player1Castle == null)
         {
-            Debug.LogError("EnemyPool: castles were not found.");
+            FindPlayerCastles();
+        }
+
+        if (player0Castle == null || player1Castle == null)
+        {
+            Debug.LogError($"EnemyPool: castles were not found! (P0: {(player0Castle != null ? "Ready" : "Null")}, P1: {(player1Castle != null ? "Ready" : "Null")})");
             return null;
         }
 
@@ -53,7 +68,8 @@ public class EnemyPool : NetworkBehaviour
             return null;
         }
 
-        Unit unit = units.Find(candidate => !candidate.gameObject.activeSelf && MatchesType(candidate, unitType));
+        // ✅ Check 'candidate != null' FIRST to avoid checking destroyed Unity Objects!
+        Unit unit = units.Find(candidate => candidate != null && !candidate.gameObject.activeSelf && MatchesType(candidate, unitType));
 
         if (unit == null)
         {
@@ -76,6 +92,17 @@ public class EnemyPool : NetworkBehaviour
         return unit;
     }
 
+    private int CountActiveUnits()
+    {
+        // ✅ Remove destroyed references from pool list dynamically
+        units.RemoveAll(u => u == null);
+
+        int count = 0;
+        foreach (Unit unit in units)
+            if (unit != null && unit.gameObject.activeSelf) count++;
+        return count;
+    }
+
     private bool MatchesType(Unit unit, UnitType unitType)
     {
         return unitType switch
@@ -84,14 +111,6 @@ public class EnemyPool : NetworkBehaviour
             UnitType.Swordsman => unit is Swordsman,
             _ => false
         };
-    }
-
-    private int CountActiveUnits()
-    {
-        int count = 0;
-        foreach (Unit unit in units)
-            if (unit != null && unit.gameObject.activeSelf) count++;
-        return count;
     }
 
     public void ReturnToPool(Unit unit)
@@ -113,6 +132,12 @@ public class EnemyPool : NetworkBehaviour
             if (playerId == 0) player0Castle = castle;
             else if (playerId == 1) player1Castle = castle;
         }
+    }
+    
+    [Rpc(SendTo.Server)]
+    public void RequestSpawnUnitServerRpc(int requestingPlayerId, UnitType unitType)
+    {
+        SpawnUnit(requestingPlayerId, unitType);
     }
     
     public void ForceRefreshCastles()

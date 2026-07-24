@@ -2,8 +2,9 @@
 using UnityEngine;
 using Unity.Netcode;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 
-public class TowerPlacementController : NetworkBehaviour
+public class TowerPlacementController : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private MapGenerator mapGenerator;
@@ -16,28 +17,30 @@ public class TowerPlacementController : NetworkBehaviour
     private List<GameObject> activeHighlights = new List<GameObject>();
     private GameObject hoverHighlightInstance;
 
-    void Start()
+    private void Start()
     {
         if (mapGenerator == null) mapGenerator = FindFirstObjectByType<MapGenerator>();
         if (goldUI == null) goldUI = FindFirstObjectByType<GoldUI>();
     }
 
-    public override void OnNetworkSpawn()
+    private void Update()
     {
-        if (IsHost || IsServer) localPlayerId = 0;
-        else localPlayerId = 1;
-    }
+        if (localPlayerId == -1 && NetworkManager.Singleton != null && NetworkManager.Singleton.IsClient)
+        {
+            localPlayerId = NetworkManager.Singleton.IsHost ? 0 : 1;
+        }
 
-    void Update()
-    {
-        if (!IsClient || localPlayerId == -1) return;
+        if (localPlayerId == -1) return;
+
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
         if (Pointer.current != null && Pointer.current.press.wasPressedThisFrame)
         {
-            HandlePlacementInput();
+            Vector2 screenPos = Pointer.current.position.ReadValue();
+            HandlePlacementInput(screenPos);
         }
     }
-    
+
     public void ClearHighlights()
     {
         foreach (GameObject highlight in activeHighlights)
@@ -47,30 +50,47 @@ public class TowerPlacementController : NetworkBehaviour
         activeHighlights.Clear();
     }
 
-
-    private void HandlePlacementInput()
+    private void HandlePlacementInput(Vector2 screenPos)
     {
         Debug.Log($"Tower place attempt by player {localPlayerId}");
-        if (mapGenerator == null || Camera.main == null || Pointer.current == null) return;
+        if (mapGenerator == null) mapGenerator = FindFirstObjectByType<MapGenerator>();
+        if (goldUI == null) goldUI = FindFirstObjectByType<GoldUI>();
 
-        Ray ray = Camera.main.ScreenPointToRay(Pointer.current.position.ReadValue());
+        Camera mainCam = Camera.main;
+        if (mainCam == null || mapGenerator == null)
+        {
+            Debug.LogWarning("TowerPlacementController: Camera or MapGenerator missing!");
+            return;
+        }
 
-        if (Physics.Raycast(ray, out RaycastHit hit))
+        Ray ray = mainCam.ScreenPointToRay(screenPos);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, 100f))
         {
             Vector2Int gridPos = WorldToGrid(hit.point);
 
-            // Will safely evaluate false now if map isn't generated yet
+            // Validate placement on map
             if (mapGenerator.IsValidTowerPlacement(gridPos, localPlayerId))
             {
                 if (goldUI != null && goldUI.TrySpend(towerCost))
                 {
                     mapGenerator.PlaceTowerServerRpc(gridPos, localPlayerId);
                 }
+                else
+                {
+                    Debug.Log("TowerPlacementController: Not enough gold to place tower!");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"TowerPlacementController: Invalid placement at {gridPos} for Player {localPlayerId}");
             }
         }
+        else
+        {
+            Debug.LogWarning("TowerPlacementController: Raycast missed tile colliders!");
+        }
     }
-
-    private int mapHeightGrid() => mapGenerator.mapHeight;
 
     private Vector2Int WorldToGrid(Vector3 worldPos)
     {

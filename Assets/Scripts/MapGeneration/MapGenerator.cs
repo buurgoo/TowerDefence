@@ -153,49 +153,55 @@ public class MapGenerator : NetworkBehaviour
 
     private void SetupCastleTile(Vector2Int pos, int playerId)
     {
-        bool isHostOrServer = NetworkManager.Singleton != null && (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer);
-    
-        if (isHostOrServer && castle != null)
+        bool isServer = NetworkManager.Singleton != null &&
+                        (NetworkManager.Singleton.IsServer || NetworkManager.Singleton.IsHost);
+
+        if (!isServer || castle == null)
+            return;
+
+        Vector3 worldCoords = GridToWorld(pos, 0.1f);
+
+        GameObject instance = Instantiate(castle, worldCoords, Quaternion.identity);
+
+        Tower tower = gameObject.AddComponent<Tower>();
+
+        TowerTile towerTile = new TowerTile
         {
-            Vector3 worldCoords = GridToWorld(pos, height: 0.1f);
-            GameObject instance = Instantiate(castle, worldCoords, Quaternion.identity);
+            GridPosition = pos,
+            CurrentType = TileType.Castle,
+            OwnerPlayerId = playerId,
+            IsSocketOccupied = true,
+            SpawnedObjectRef = instance,
+            tower = tower
+        };
 
-            Tower tower = gameObject.AddComponent(typeof(Tower)) as Tower;
-            TowerTile towerTile = new TowerTile
-            {
-                GridPosition = pos,
-                CurrentType = TileType.Castle,
-                OwnerPlayerId = playerId,
-                IsSocketOccupied = true,
-                SpawnedObjectRef = instance,
-                tower = tower,
-            };
-            _mapGrid[pos.x, pos.y] = towerTile;
-            towers.Add(towerTile);
+        _mapGrid[pos.x, pos.y] = towerTile;
+        towers.Add(towerTile);
 
-            Castle instanceCastle = instance.GetComponent<Castle>();
-            if (instanceCastle != null)
-            {
-                //TowerTile tile = _mapGrid[pos.x, pos.y] as TowerTile;
-                //tile.towerObject = instance;
-                instanceCastle.setPlayerId(playerId);
-                instanceCastle.setMaxHP(20);
-            }
-        
-            NetworkObject netObj = instance.GetComponent<NetworkObject>();
-            if (netObj != null)
-            {
-                netObj.Spawn();
-            }
-            else
-            {
-                Debug.LogError("Castle prefab is missing a NetworkObject component!");
-            }
+        Castle castleComponent = instance.GetComponent<Castle>();
 
-            Color playerColor;
-            if (playerId == 0) { playerColor = new Color(1f, 0f, 0f); }
-            else { playerColor = new Color(0f, 0f, 1f); }
-            SetColor(playerColor, pos);
+        if (castleComponent != null)
+        {
+            castleComponent.setPlayerId(playerId);
+            castleComponent.setMaxHP(20);
+        }
+
+        NetworkObject networkObject = instance.GetComponent<NetworkObject>();
+
+        if (networkObject != null)
+        {
+            networkObject.Spawn();
+        }
+        else
+        {
+            Debug.LogError("Castle prefab is missing a NetworkObject.");
+        }
+
+        EnemyPool pool = FindFirstObjectByType<EnemyPool>();
+
+        if (pool != null && castleComponent != null)
+        {
+            pool.RegisterCastle(castleComponent, playerId);
         }
     }
 
@@ -204,13 +210,12 @@ public class MapGenerator : NetworkBehaviour
         if (_mapGrid == null) return false;
 
         if (pos.x < 0 || pos.x >= mapWidth || pos.y < 0 || pos.y >= mapHeight) return false;
-    
+
         TileData tile = _mapGrid[pos.x, pos.y];
         if (tile == null || tile.CurrentType != TileType.Empty || tile.IsSocketOccupied) return false;
 
         Vector2Int castlePos = GetCastlePosition(playerId);
         if (castlePos == new Vector2Int(-1, -1)) return false;
-        //if (Mathf.Abs(pos.x - castlePos.x) + Mathf.Abs(pos.y - castlePos.y) > castleTerritoryRange) return false;
 
         foreach (Vector2Int neighbor in GetNeighbors(pos))
         {
@@ -220,13 +225,26 @@ public class MapGenerator : NetworkBehaviour
                 return true;
             }
         }
+
         return false;
     }
 
     [Rpc(SendTo.Server)]
     public void PlaceTowerServerRpc(Vector2Int pos, int playerId)
     {
-        if (!IsValidTowerPlacement(pos, playerId)) return;
+        if (_mapGrid == null)
+        {
+            Debug.LogError("Tower Placement Failed: _mapGrid is NULL!");
+            return;
+        }
+
+        if (!IsValidTowerPlacement(pos, playerId))
+        {
+            Debug.LogWarning($"Tower Placement Invalid at {pos} for Player {playerId}. " +
+                             $"Castle Pos: {GetCastlePosition(playerId)}, " +
+                             $"Tile Type: {_mapGrid[pos.x, pos.y]?.CurrentType}");
+            return;
+        }
 
         Debug.Log($"Server: Spawning tower at {pos} for Player {playerId}");
 
@@ -239,10 +257,6 @@ public class MapGenerator : NetworkBehaviour
             if (netObj != null)
             {
                 netObj.Spawn(destroyWithScene: true);
-            }
-            else
-            {
-                Debug.LogError("MapGenerator: towerPrefab is missing a NetworkObject component!");
             }
 
             TowerTile towerTile = new TowerTile
@@ -265,11 +279,9 @@ public class MapGenerator : NetworkBehaviour
             _mapGrid[pos.x, pos.y] = towerTile;
             towers.Add(towerTile);
 
-            Color playerColor;
-            if (playerId == 0) { playerColor = new Color(1f, 0f, 0f); }
-            else { playerColor = new Color(0f, 0f, 1f); }
-
+            Color playerColor = (playerId == 0) ? new Color(1f, 0f, 0f) : new Color(0f, 0f, 1f);
             SetColor(playerColor, pos);
+
             NotifyTowerBuiltClientRpc(pos, playerId, netObj.NetworkObjectId);
         }
     }

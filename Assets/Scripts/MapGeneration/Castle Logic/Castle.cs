@@ -1,6 +1,5 @@
-using System.Collections.Generic;
-using UnityEngine;
 using Unity.Netcode;
+using UnityEngine;
 
 public class Castle : NetworkBehaviour
 {
@@ -8,15 +7,61 @@ public class Castle : NetworkBehaviour
     private NetworkVariable<int> networkPlayerId = new NetworkVariable<int>(-1);
 
     [Header("Health")]
-    private int maxHp = 0;
-    private int currentHp = 0;
+    [SerializeField] private int maxHp = 100;
+    private int currentHp;
+
+    [Header("Visuals")]
+    [SerializeField] private Renderer[] castleRenderers;
+
+    [SerializeField] private Color player0Color = Color.red;
+    [SerializeField] private Color player1Color = Color.blue;
+
+    private void Awake()
+    {
+        if (castleRenderers == null || castleRenderers.Length == 0)
+        {
+            castleRenderers = GetComponentsInChildren<Renderer>();
+        }
+
+        currentHp = maxHp;
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        networkPlayerId.OnValueChanged += OnPlayerChanged;
+
+        ApplyColor(networkPlayerId.Value);
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        networkPlayerId.OnValueChanged -= OnPlayerChanged;
+    }
+
+    private void OnPlayerChanged(int previous, int current)
+    {
+        ApplyColor(current);
+    }
+
+    private void ApplyColor(int playerId)
+    {
+        Color color = playerId == 0 ? player0Color : player1Color;
+
+        foreach (Renderer renderer in castleRenderers)
+        {
+            if (renderer == null)
+                continue;
+
+            renderer.material.SetColor("_BaseColor", color);
+        }
+    }
 
     public void setPlayerId(int id)
     {
-        if (IsServer || IsHost)
-        {
-            networkPlayerId.Value = id;
-        }
+        if (!IsServer)
+            return;
+
+        networkPlayerId.Value = id;
     }
 
     public int getPlayerId()
@@ -26,11 +71,33 @@ public class Castle : NetworkBehaviour
 
     public void setMaxHP(int hp)
     {
-        if (maxHp == 0) { maxHp = hp; currentHp = hp; }
+        maxHp = hp;
+        currentHp = hp;
     }
 
-    public int getMaxHP() => maxHp;
-    public int getCurrentHP() => currentHp;
+    public int getMaxHP()
+    {
+        return maxHp;
+    }
+
+    public int getCurrentHP()
+    {
+        return currentHp;
+    }
+
+
+    public void heal(int heal)
+    {
+        currentHp += heal;
+
+        if (currentHp > maxHp)
+            currentHp = maxHp;
+    }
+
+    public void fullHeal()
+    {
+        currentHp = maxHp;
+    }
 
     public void damage(int damage)
     {
@@ -38,16 +105,16 @@ public class Castle : NetworkBehaviour
         
         Debug.Log($"Player {networkPlayerId.Value} castle damaged. Remaining: {currentHp}/{maxHp}");
         currentHp -= damage;
+        
         if (currentHp <= 0)
         {
             currentHp = 0;
-            Lose();
+            Lose(networkPlayerId.Value);
         }
     }
 
-    public void Lose()
+    public void Lose(int losingPlayerId)
     {
-        int losingPlayerId = networkPlayerId.Value;
         int winningPlayerId = (losingPlayerId == 0) ? 1 : 0;
 
         Debug.Log($"Player {losingPlayerId}'s castle destroyed! Player {winningPlayerId} Wins!");
@@ -61,19 +128,5 @@ public class Castle : NetworkBehaviour
         {
             Debug.LogError("Castle: EndGameUI not found in scene!");
         }
-    }
-
-    public void heal(int heal)
-    {
-        currentHp += heal;
-        if (currentHp > maxHp)
-        {
-            currentHp = maxHp;
-        }
-    }
-
-    public void fullHeal()
-    {
-        currentHp = maxHp;
     }
 }
