@@ -15,14 +15,28 @@ public class GridPosition
 }
 
 [Serializable]
+public class EnemyUnitPosition
+{
+    public float x;
+    public float y;
+    public bool exists;
+
+    public EnemyUnitPosition(float x, float y, bool exists)
+    {
+        this.x = x;
+        this.y = y;
+        this.exists = exists;
+    }
+}
+
+[Serializable]
 public class AiGameState
 {
-    public string map_id;
+   public string map_id;
     public int player_id;
     public int coins;
     public List<GridPosition> available_tower_positions;
-    public bool enemy_units;
-    public int enemy_unit_count;
+    public List<EnemyUnitPosition> enemy_units;
     public bool game_finished;
     public int winner_player_id;
 }
@@ -39,13 +53,18 @@ class GridPosition(BaseModel):
     x: int
     y: int
 
+class EnemyUnitPosition(BaseModel):
+    x: float
+    y: float
+    exists: bool
+
 
 class GameState(BaseModel):
     map_id: str
     player_id: int = Field(default=1, ge=0, le=1)
     coins: int = Field(ge=0)
     available_tower_positions: list[GridPosition]
-    enemy_units: list[list[float] | None] # [(2.4456, 4, 1.222), (1.444, 1.23, 0), (3.3443, 1, 2), None, None, ..., None]
+    enemy_units: list[EnemyUnitPosition]
     game_finished: bool
     winner_player_id: int = Field(default=-1, ge=-1, le=1)
 */

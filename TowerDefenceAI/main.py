@@ -23,12 +23,18 @@ class GridPosition(BaseModel):
     y: int
 
 
+class EnemyUnitPosition(BaseModel):
+    x: float
+    y: float
+    exists: bool
+
+
 class GameState(BaseModel):
     map_id: str
     player_id: int = Field(default=1, ge=0, le=1)
     coins: int = Field(ge=0)
     available_tower_positions: list[GridPosition]
-    enemy_units: list[list[float] | None] # [(2.4456, 4, 1.222), (1.444, 1.23, 0), (3.3443, 1, 2), None, None, ..., None]
+    enemy_units: list[EnemyUnitPosition]
     game_finished: bool
     winner_player_id: int = Field(default=-1, ge=-1, le=1)
 
