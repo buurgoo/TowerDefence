@@ -55,10 +55,11 @@ def receive_game_state(state: GameState) -> dict[str, object]:
         with DATA_FILE.open("a", encoding="utf-8") as file:
             file.write(json.dumps(record, ensure_ascii=False) + "\n")
 
+    enemy_count = sum(1 for unit in state.enemy_units if unit.exists)
     print(
         f"Received state: map={state.map_id}, "
         f"coins={state.coins}, "
-        f"enemies={len([unit for unit in state.enemy_units if unit is not None])}, "
+        f"enemies={enemy_count}, "
         f"finished={state.game_finished}"
     )
 
