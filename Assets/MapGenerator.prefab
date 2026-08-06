@@ -9,8 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4089392148122347492}
-  - component: {fileID: 6808437175058216901}
   - component: {fileID: 400930207678124343}
+  - component: {fileID: 6808437175058216901}
   m_Layer: 0
   m_Name: MapGenerator
   m_TagString: Untagged
@@ -33,28 +33,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6808437175058216901
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1884917095911228854}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b46ab043446148fa825845f3e4bfa90b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MapGenerator
-  generationSeed: 42
-  mapWidth: 20
-  mapHeight: 20
-  tileSize: 1
-  playerCount: 2
-  neutralBasesCount: 3
-  minDistanceBetweenObjects: 5
-  forestClusterCount: 5
-  forestClusterSize: 10
-  mineSpawnChance: 0.005
 --- !u!114 &400930207678124343
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -67,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3071440941
+  GlobalObjectIdHash: 3909361065
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 8
@@ -81,3 +59,35 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
+--- !u!114 &6808437175058216901
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1884917095911228854}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b46ab043446148fa825845f3e4bfa90b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MapGenerator
+  ShowTopMostFoldoutHeaderGroup: 1
+  castle: {fileID: 0}
+  towerPrefab: {fileID: 0}
+  generationSeed: 42
+  mapWidth: 20
+  mapHeight: 20
+  tileSize: 1
+  towers: []
+  playerCount: 2
+  minDistanceBetweenObjects: 5
+  castleTerritoryRange: 8
+  emptyTilePrefab: {fileID: 0}
+  roadTilePrefab: {fileID: 0}
+  forestTilePrefab: {fileID: 0}
+  mineTilePrefab: {fileID: 0}
+  castleTilePrefab: {fileID: 0}
+  castleModelPrefab: {fileID: 0}
+  forestClusterCount: 5
+  forestClusterSize: 10
+  mineCount: 4

@@ -18,6 +18,7 @@ public class LobbyUI : NetworkBehaviour
     [SerializeField] private Button hostButton;
     [SerializeField] private Button connectButton;
     [SerializeField] private Button startGameButton;
+    [SerializeField] private Button playVsAiButton;
 
     [Header("Text Displays")]
     [SerializeField] private TMP_Text playerListText;
@@ -39,6 +40,7 @@ public class LobbyUI : NetworkBehaviour
 
         hostButton.onClick.AddListener(OnHostClicked);
         connectButton.onClick.AddListener(OnConnectClicked);
+        if (playVsAiButton != null) playVsAiButton.onClick.AddListener(OnPlayVsAiClicked);
         if (startGameButton != null) startGameButton.onClick.AddListener(OnStartGameClicked);
     }
 
@@ -97,6 +99,21 @@ public class LobbyUI : NetworkBehaviour
         {
             if (statusText != null) statusText.text = "Failed to start Client!";
         }
+    }
+
+    private void OnPlayVsAiClicked() { 
+        if (!NetworkManager.Singleton.StartHost())
+        {
+            if (statusText != null) statusText.text = "Failed to start AI game!";
+            return;
+        }
+
+    HideLobbyClientRpc();
+
+    int randomSeed = Random.Range(1, 99999);
+    mapGenerator.RegenerateMapRpc(randomSeed);
+
+    Debug.Log("Play vs AI"); 
     }
 
     private void OnStartGameClicked()
