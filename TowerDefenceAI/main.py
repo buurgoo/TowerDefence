@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 DATA_FILE = Path("collected_game_states.jsonl")
 write_lock = Lock()
 
-app = FastAPI(
+app = FastAPI( # run from TowerDefenceAI: python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
     title="Tower Defence AI API",
     version="0.1.0",
 )

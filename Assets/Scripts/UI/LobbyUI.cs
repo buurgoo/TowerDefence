@@ -30,6 +30,9 @@ public class LobbyUI : NetworkBehaviour
     [Header("Lobby Settings")]
     [SerializeField] private int minPlayersToStart = 2;
 
+    [SerializeField]
+    private AiGameStateReport aiGameStateReport;
+
     private void Start()
     {
         if (mapGenerator == null) mapGenerator = FindFirstObjectByType<MapGenerator>();
@@ -101,19 +104,22 @@ public class LobbyUI : NetworkBehaviour
         }
     }
 
-    private void OnPlayVsAiClicked() { 
+    private void OnPlayVsAiClicked() 
+    { 
         if (!NetworkManager.Singleton.StartHost())
         {
             if (statusText != null) statusText.text = "Failed to start AI game!";
             return;
         }
 
-    HideLobbyClientRpc();
+        HideLobbyClientRpc();
 
-    int randomSeed = Random.Range(1, 99999);
-    mapGenerator.RegenerateMapRpc(randomSeed);
+        int randomSeed = Random.Range(1, 99999);
+        mapGenerator.RegenerateMapRpc(randomSeed);
+        
+        Debug.Log("Play vs AI"); 
 
-    Debug.Log("Play vs AI"); 
+        if (aiGameStateReport != null) aiGameStateReport.StartReporting();
     }
 
     private void OnStartGameClicked()
