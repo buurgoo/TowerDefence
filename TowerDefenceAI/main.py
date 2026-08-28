@@ -8,11 +8,12 @@ from threading import Lock
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
-
 DATA_FILE = Path("collected_game_states.jsonl")
 write_lock = Lock()
+prev_game_state: GameState | None = None
 
-app = FastAPI( # run from TowerDefenceAI: python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
+app = FastAPI(
+    # run from TowerDefenceAI: python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
     title="Tower Defence AI API",
     version="0.1.0",
 )
@@ -22,12 +23,10 @@ class GridPosition(BaseModel):
     x: int
     y: int
 
-
 class EnemyUnitPosition(BaseModel):
     x: float
     y: float
     exists: bool
-
 
 class GameState(BaseModel):
     map_id: str
@@ -38,14 +37,15 @@ class GameState(BaseModel):
     game_finished: bool
     winner_player_id: int = Field(default=-1, ge=-1, le=1)
 
-
 @app.get("/health")
-def health() -> dict[str, str]:
+def health():
     return {"status": "ok"}
 
-
 @app.post("/game-state")
-def receive_game_state(state: GameState) -> dict[str, object]:
+def receive_game_state(state):
+    global prev_game_state
+    prev_game_state = state
+
     record = {
         "received_at": datetime.now(timezone.utc).isoformat(),
         **state.model_dump(),
@@ -64,3 +64,8 @@ def receive_game_state(state: GameState) -> dict[str, object]:
     )
 
     return { "accepted": True, "action": "wait" } # temp 
+
+@app.get("/game-state")
+def get_game_state():
+    if prev_game_state is None: return { "ready": False }
+    return prev_game_state.model_dump()
