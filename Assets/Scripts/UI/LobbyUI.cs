@@ -30,8 +30,8 @@ public class LobbyUI : NetworkBehaviour
     [Header("Lobby Settings")]
     [SerializeField] private int minPlayersToStart = 2;
 
-    [SerializeField]
-    private AiGameStateReport aiGameStateReport;
+    [SerializeField] private AiGameStateReport aiGameStateReport;
+    [SerializeField] private AiDecisionLogic aiDecisionLogic;
 
     private void Start()
     {
@@ -113,6 +113,7 @@ public class LobbyUI : NetworkBehaviour
         }
 
         HideLobbyClientRpc();
+        aiDecisionLogic.InitializeAiAgent();
 
         int randomSeed = Random.Range(1, 99999);
         mapGenerator.RegenerateMapRpc(randomSeed);

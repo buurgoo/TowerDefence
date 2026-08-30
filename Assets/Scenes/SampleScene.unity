@@ -235,8 +235,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 46227454}
-  - component: {fileID: 46227453}
   - component: {fileID: 46227452}
+  - component: {fileID: 46227453}
   m_Layer: 0
   m_Name: AiGameStateReport
   m_TagString: Untagged
@@ -2009,6 +2009,83 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &887581866
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 887581869}
+  - component: {fileID: 887581867}
+  - component: {fileID: 887581868}
+  m_Layer: 0
+  m_Name: AiLogic
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &887581867
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 887581866}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 2543886487
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  <InScenePlaced>k__BackingField: 0
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 0
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
+--- !u!114 &887581868
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 887581866}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02d140b6ef8fbe04799e83a2351377df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AiDecisionLogic
+  ShowTopMostFoldoutHeaderGroup: 1
+  mapGenerator: {fileID: 7933355413383087477}
+  enemyPool: {fileID: 2038010037}
+  aiTickInterval: 1
+  goldGenerationInterval: 1
+  goldPerTick: 1
+--- !u!4 &887581869
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 887581866}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.72024, y: -0.5, z: -21.67658}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &945084684
 GameObject:
   m_ObjectHideFlags: 0
@@ -2636,6 +2713,8 @@ MonoBehaviour:
   statusText: {fileID: 1023357298}
   mapGenerator: {fileID: 7933355413383087477}
   minPlayersToStart: 2
+  aiGameStateReport: {fileID: 0}
+  aiDecisionLogic: {fileID: 887581868}
   goldUI: {fileID: 0}
   spawnUI: {fileID: 0}
 --- !u!114 &1221314425
@@ -4302,3 +4381,4 @@ SceneRoots:
   - {fileID: 229607238}
   - {fileID: 1221314428}
   - {fileID: 46227454}
+  - {fileID: 887581869}

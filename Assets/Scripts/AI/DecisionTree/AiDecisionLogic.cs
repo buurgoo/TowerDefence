@@ -4,28 +4,26 @@ using Unity.Netcode;
 using UnityEngine;
 
 
-public class AiLoop : NetworkBehaviour
+public class AiDecisionLogic : NetworkBehaviour
 {
-    [SerializeField] private MapGenerator mapGenerator;
-    [SerializeField] private EnemyPool enemyPool;
+    [SerializeField] public MapGenerator mapGenerator;
+    [SerializeField] public EnemyPool enemyPool;
     [SerializeField] private float aiTickInterval = 1f;
-    [SerializeField] private int aiPlayerId = 0;
+    private int aiPlayerId = 1;
 
     private int Gold = 0;
     [SerializeField] public float goldGenerationInterval = 1f;
     [SerializeField] public int goldPerTick = 1;
 
-    private AiAgent _aiAgent;
     private Coroutine _tickCoroutine;
 
-    public override void OnNetworkSpawn()
+    public void InitializeAiAgent()
     {
         if (!IsServer) return;
 
         _tickCoroutine = StartCoroutine(GenerateGoldOverTime());
         Debug.Log("GoldUI initialized successfully for Ai.");
 
-        _aiAgent = new AiAgent(mapGenerator, aiPlayerId);
         StartCoroutine(RunAiLoop());
     }
 
@@ -42,25 +40,18 @@ public class AiLoop : NetworkBehaviour
     {
         bool hasSwordsman = true; // Temporary
         bool hasArcher = true; // Temporary
-        int targetPlayerId = 1 - aiPlayerId;
+        int targetPlayerId = 0;
 
         List<Vector2Int> availableTowerPositions = mapGenerator.GetTowerPosBtwPlayers(aiPlayerId, targetPlayerId);
-        AiDecision decision = _aiAgent.ChooseAction(hasSwordsman, hasArcher, availableTowerPositions);
+        DecideAction(Gold, availableTowerPositions);
+    }
 
-        switch (decision.ActionType)
-        {
-            case AiActionType.Attack:
-                Debug.Log($"AI agent Attack: {decision.UnitType}, " + $"target player: {decision.TargetPlayerId}");
-                SpawnUnit(decision.UnitType);
-                break;
-
-            case AiActionType.Defend:
-                Debug.Log($"AI agent Defend: move tower to " + $"{decision.TowerPosition.Value}");
-                break;
-
-            case AiActionType.Wait:
-                Debug.Log("AI agent Wait");
-                break;
+    private void DecideAction(int gold, List<Vector2Int> towerPositions)
+    {
+        if (gold >= 5) 
+        { 
+            SpawnUnit(UnitType.Swordsman);
+            Debug.Log("Ai spawning Unit");
         }
     }
 
@@ -79,6 +70,7 @@ public class AiLoop : NetworkBehaviour
         if (TrySpend(5))
         {
             enemyPool.SpawnUnit(aiPlayerId, unitType);
+            Debug.Log($"Ai (player {aiPlayerId}) spawns unit.");
         }
         else
         {
